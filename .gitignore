@@ -1,0 +1,39 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+
+# Max autosave
+*_autosave.maxpat
+*.maxpat.autosave
+*.maxsnap
+
+# Max project user files
+.maxproj.user
+
+# Max build artifacts
+build/
+*.mxe64
+*.mxe
+*.mxo
+*.dll
+*.dylib
+
+# Ableton
+*.asd
+Ableton Project Info/
+Samples/Processed/
+Samples/Imported/
+Freeze/
+Backup/
+
+# Node tools (if used)
+node_modules/
+dist/
+
+# Python tools (if used)
+.venv/
+__pycache__/
+*.py[cod]

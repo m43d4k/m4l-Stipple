@@ -1,0 +1,375 @@
+{
+  "patcher": {
+    "fileversion": 1,
+    "appversion": {
+      "major": 9,
+      "minor": 0,
+      "revision": 9,
+      "architecture": "x64",
+      "modernui": 1
+    },
+    "rect": [
+      100.0,
+      100.0,
+      720.0,
+      520.0
+    ],
+    "default_fontsize": 12.0,
+    "default_fontname": "Lato",
+    "gridsize": [
+      15.0,
+      15.0
+    ],
+    "boxes": [
+      {
+        "box": {
+          "id": "code",
+          "maxclass": "codebox",
+          "numinlets": 10,
+          "numoutlets": 1,
+          "outlettype": [
+            ""
+          ],
+          "patching_rect": [
+            40.0,
+            70.0,
+            520.0,
+            360.0
+          ],
+          "fontname": "Lato",
+          "fontsize": 12.0,
+          "code": "History phase(0), env(0), target(0), noiseSeed(0.371), noiseLp(0);\r\ntrig = in1;\r\nfreq = max(in2, 1);\r\nvel = min(max(in3, 0), 1);\r\ndecayMs = max(in4, 1);\r\nsineLevel = min(max(in5, 0), 1);\r\npulseLevel = min(max(in6, 0), 1);\r\nnoiseLevel = min(max(in7, 0), 1);\r\npulseWidth = min(max(in8, 0.02), 0.98);\r\nnoiseColor = min(max(in9, 0), 1);\r\nattackMs = min(max(in10, 0), 10);\r\nhit = trig > 0;\r\ndecayCoef = exp(-1 / (samplerate * decayMs * 0.001));\r\nattackCoef = attackMs <= 0 ? 1 : 1 - exp(-1 / (samplerate * attackMs * 0.001));\r\ntarget = hit ? vel : target * decayCoef;\r\nenv = env + (target - env) * attackCoef;\r\nphase = phase + freq / samplerate;\r\nphase = phase - floor(phase);\r\nsine = sin(twopi * phase);\r\npulse = phase < pulseWidth ? 1 : -1;\r\nnoiseSeed = noiseSeed * 303.917 + 0.173;\r\nnoiseSeed = noiseSeed - floor(noiseSeed);\r\nnoise = noiseSeed * 2 - 1;\r\nnoiseLp = noiseLp + (noise - noiseLp) * 0.08;\r\nnoiseHp = noise - noiseLp;\r\nnoiseTone = noiseLp + (noiseHp - noiseLp) * noiseColor;\r\nvoice = sine * sineLevel;\r\nvoice += pulse * pulseLevel;\r\nvoice += noiseTone * noiseLevel;\r\nout1 = voice * env * 0.2;"
+        }
+      },
+      {
+        "box": {
+          "id": "in1",
+          "maxclass": "newobj",
+          "numinlets": 0,
+          "numoutlets": 1,
+          "outlettype": [
+            ""
+          ],
+          "patching_rect": [
+            40.0,
+            25.0,
+            140.0,
+            22.0
+          ],
+          "text": "in 1 @comment trigger"
+        }
+      },
+      {
+        "box": {
+          "id": "in2",
+          "maxclass": "newobj",
+          "numinlets": 0,
+          "numoutlets": 1,
+          "outlettype": [
+            ""
+          ],
+          "patching_rect": [
+            190.0,
+            25.0,
+            120.0,
+            22.0
+          ],
+          "text": "in 2 @comment freq"
+        }
+      },
+      {
+        "box": {
+          "id": "in3",
+          "maxclass": "newobj",
+          "numinlets": 0,
+          "numoutlets": 1,
+          "outlettype": [
+            ""
+          ],
+          "patching_rect": [
+            320.0,
+            25.0,
+            130.0,
+            22.0
+          ],
+          "text": "in 3 @comment velocity"
+        }
+      },
+      {
+        "box": {
+          "id": "in4",
+          "maxclass": "newobj",
+          "numinlets": 0,
+          "numoutlets": 1,
+          "outlettype": [
+            ""
+          ],
+          "patching_rect": [
+            460.0,
+            25.0,
+            130.0,
+            22.0
+          ],
+          "text": "in 4 @comment decay"
+        }
+      },
+      {
+        "box": {
+          "id": "in5",
+          "maxclass": "newobj",
+          "numinlets": 0,
+          "numoutlets": 1,
+          "outlettype": [
+            ""
+          ],
+          "patching_rect": [
+            40.0,
+            445.0,
+            145.0,
+            22.0
+          ],
+          "text": "in 5 @comment sine"
+        }
+      },
+      {
+        "box": {
+          "id": "in6",
+          "maxclass": "newobj",
+          "numinlets": 0,
+          "numoutlets": 1,
+          "outlettype": [
+            ""
+          ],
+          "patching_rect": [
+            195.0,
+            445.0,
+            145.0,
+            22.0
+          ],
+          "text": "in 6 @comment pulse"
+        }
+      },
+      {
+        "box": {
+          "id": "in7",
+          "maxclass": "newobj",
+          "numinlets": 0,
+          "numoutlets": 1,
+          "outlettype": [
+            ""
+          ],
+          "patching_rect": [
+            350.0,
+            445.0,
+            145.0,
+            22.0
+          ],
+          "text": "in 7 @comment noise"
+        }
+      },
+      {
+        "box": {
+          "id": "in8",
+          "maxclass": "newobj",
+          "numinlets": 0,
+          "numoutlets": 1,
+          "outlettype": [
+            ""
+          ],
+          "patching_rect": [
+            505.0,
+            445.0,
+            150.0,
+            22.0
+          ],
+          "text": "in 8 @comment pulsewidth"
+        }
+      },
+      {
+        "box": {
+          "id": "in9",
+          "maxclass": "newobj",
+          "numinlets": 0,
+          "numoutlets": 1,
+          "outlettype": [
+            ""
+          ],
+          "patching_rect": [
+            40.0,
+            475.0,
+            150.0,
+            22.0
+          ],
+          "text": "in 9 @comment noisecolor"
+        }
+      },
+      {
+        "box": {
+          "id": "in10",
+          "maxclass": "newobj",
+          "numinlets": 0,
+          "numoutlets": 1,
+          "outlettype": [
+            ""
+          ],
+          "patching_rect": [
+            200.0,
+            475.0,
+            135.0,
+            22.0
+          ],
+          "text": "in 10 @comment attack"
+        }
+      },
+      {
+        "box": {
+          "id": "out1",
+          "maxclass": "newobj",
+          "numinlets": 1,
+          "numoutlets": 0,
+          "patching_rect": [
+            590.0,
+            220.0,
+            42.0,
+            22.0
+          ],
+          "text": "out 1"
+        }
+      }
+    ],
+    "lines": [
+      {
+        "patchline": {
+          "source": [
+            "in1",
+            0
+          ],
+          "destination": [
+            "code",
+            0
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "in2",
+            0
+          ],
+          "destination": [
+            "code",
+            1
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "in3",
+            0
+          ],
+          "destination": [
+            "code",
+            2
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "in4",
+            0
+          ],
+          "destination": [
+            "code",
+            3
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "in5",
+            0
+          ],
+          "destination": [
+            "code",
+            4
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "in6",
+            0
+          ],
+          "destination": [
+            "code",
+            5
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "in7",
+            0
+          ],
+          "destination": [
+            "code",
+            6
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "in8",
+            0
+          ],
+          "destination": [
+            "code",
+            7
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "in9",
+            0
+          ],
+          "destination": [
+            "code",
+            8
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "in10",
+            0
+          ],
+          "destination": [
+            "code",
+            9
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "code",
+            0
+          ],
+          "destination": [
+            "out1",
+            0
+          ]
+        }
+      }
+    ]
+  }
+}
