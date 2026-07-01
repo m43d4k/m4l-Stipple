@@ -224,7 +224,7 @@ Tune は基準周波数を Hz で決める。
 
 ```text
 Tune: 20.0 Hz - 880.0 Hz
-UI display: 110.0 Hz
+UI display: 261.63 Hz
 ```
 
 Internal Grid では、Tune は row 1 の基音周波数になる。
@@ -479,7 +479,7 @@ UI は装飾よりも精密な操作を優先する。
 
 - Step Length: fixed 1/16-equivalent
 - Decay: 5 ms
-- Tune: 110.0 Hz
+- Tune: 261.63 Hz
 - Pitch Range: 2.0 oct
 - Sine Level: high
 - Pulse Level: low

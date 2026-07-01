@@ -539,7 +539,7 @@
 					"presentation_rect" : [ 5.0, 52.0, 50.0, 15.0 ],
 					"saved_attribute_attributes" : 					{
 						"valueof" : 						{
-							"parameter_initial" : [ 110 ],
+							"parameter_initial" : [ 261.63 ],
 							"parameter_initial_enable" : 1,
 							"parameter_linknames" : 1,
 							"parameter_longname" : "ctrl-tune",
@@ -547,8 +547,10 @@
 							"parameter_mmin" : 20.0,
 							"parameter_modmode" : 0,
 							"parameter_shortname" : "ctrl-tune",
+							"parameter_steps" : 86001,
 							"parameter_type" : 0,
-							"parameter_unitstyle" : 3
+							"parameter_units" : "%0.2f Hz",
+							"parameter_unitstyle" : 10
 						}
 
 					}
@@ -577,7 +579,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 300.0, 205.0, 90.0, 23.0 ],
-					"text" : "loadmess 110"
+					"text" : "loadmess 261.63"
 				}
 
 			}

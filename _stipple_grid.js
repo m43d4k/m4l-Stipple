@@ -13,7 +13,7 @@ const cells = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
 let currentStep = -1;
 let direction = 0;
 let pingpongDir = 1;
-let tuneHz = 110.0;
+let tuneHz = 261.63;
 let rangeOct = 2.0;
 let probability = 1.0;
 let seed = 0x12345678;
