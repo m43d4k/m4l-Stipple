@@ -236,10 +236,10 @@
 							"parameter_initial" : [ 0 ],
 							"parameter_initial_enable" : 1,
 							"parameter_linknames" : 1,
-							"parameter_longname" : "ctrl-mode",
+							"parameter_longname" : "Mode",
 							"parameter_mmax" : 2,
 							"parameter_modmode" : 0,
-							"parameter_shortname" : "ctrl-mode",
+							"parameter_shortname" : "Mode",
 							"parameter_type" : 2,
 							"parameter_unitstyle" : 9
 						}
@@ -401,10 +401,10 @@
 							"parameter_initial" : [ 0.5 ],
 							"parameter_initial_enable" : 1,
 							"parameter_linknames" : 1,
-							"parameter_longname" : "ctrl-attack",
+							"parameter_longname" : "Attack",
 							"parameter_mmax" : 10.0,
 							"parameter_modmode" : 0,
-							"parameter_shortname" : "ctrl-attack",
+							"parameter_shortname" : "Attack",
 							"parameter_type" : 0,
 							"parameter_unitstyle" : 2
 						}
@@ -471,11 +471,11 @@
 							"parameter_initial" : [ 18 ],
 							"parameter_initial_enable" : 1,
 							"parameter_linknames" : 1,
-							"parameter_longname" : "ctrl-decay",
+							"parameter_longname" : "Decay",
 							"parameter_mmax" : 5000.0,
 							"parameter_mmin" : 1.0,
 							"parameter_modmode" : 0,
-							"parameter_shortname" : "ctrl-decay",
+							"parameter_shortname" : "Decay",
 							"parameter_type" : 0,
 							"parameter_unitstyle" : 2
 						}
@@ -542,11 +542,11 @@
 							"parameter_initial" : [ 261.63 ],
 							"parameter_initial_enable" : 1,
 							"parameter_linknames" : 1,
-							"parameter_longname" : "ctrl-tune",
+							"parameter_longname" : "Tune",
 							"parameter_mmax" : 880.0,
 							"parameter_mmin" : 20.0,
 							"parameter_modmode" : 0,
-							"parameter_shortname" : "ctrl-tune",
+							"parameter_shortname" : "Tune",
 							"parameter_steps" : 86001,
 							"parameter_type" : 0,
 							"parameter_units" : "%0.2f Hz",
@@ -615,10 +615,10 @@
 							"parameter_initial" : [ 2 ],
 							"parameter_initial_enable" : 1,
 							"parameter_linknames" : 1,
-							"parameter_longname" : "ctrl-range",
+							"parameter_longname" : "Range",
 							"parameter_mmax" : 4.0,
 							"parameter_modmode" : 0,
-							"parameter_shortname" : "ctrl-range",
+							"parameter_shortname" : "Range",
 							"parameter_type" : 0,
 							"parameter_unitstyle" : 1
 						}
@@ -685,10 +685,10 @@
 							"parameter_initial" : [ 0.85 ],
 							"parameter_initial_enable" : 1,
 							"parameter_linknames" : 1,
-							"parameter_longname" : "ctrl-sine",
+							"parameter_longname" : "Sine",
 							"parameter_mmax" : 1.0,
 							"parameter_modmode" : 0,
-							"parameter_shortname" : "ctrl-sine",
+							"parameter_shortname" : "Sine",
 							"parameter_type" : 0,
 							"parameter_unitstyle" : 1
 						}
@@ -755,10 +755,10 @@
 							"parameter_initial" : [ 0.2 ],
 							"parameter_initial_enable" : 1,
 							"parameter_linknames" : 1,
-							"parameter_longname" : "ctrl-pulse",
+							"parameter_longname" : "Pulse",
 							"parameter_mmax" : 1.0,
 							"parameter_modmode" : 0,
-							"parameter_shortname" : "ctrl-pulse",
+							"parameter_shortname" : "Pulse",
 							"parameter_type" : 0,
 							"parameter_unitstyle" : 1
 						}
@@ -825,10 +825,10 @@
 							"parameter_initial" : [ 0.12 ],
 							"parameter_initial_enable" : 1,
 							"parameter_linknames" : 1,
-							"parameter_longname" : "ctrl-noise",
+							"parameter_longname" : "Noise",
 							"parameter_mmax" : 1.0,
 							"parameter_modmode" : 0,
-							"parameter_shortname" : "ctrl-noise",
+							"parameter_shortname" : "Noise",
 							"parameter_type" : 0,
 							"parameter_unitstyle" : 1
 						}
@@ -895,11 +895,11 @@
 							"parameter_initial" : [ 0.25 ],
 							"parameter_initial_enable" : 1,
 							"parameter_linknames" : 1,
-							"parameter_longname" : "ctrl-pw",
+							"parameter_longname" : "Pulse Width",
 							"parameter_mmax" : 0.98,
 							"parameter_mmin" : 0.02,
 							"parameter_modmode" : 0,
-							"parameter_shortname" : "ctrl-pw",
+							"parameter_shortname" : "Pulse Width",
 							"parameter_type" : 0,
 							"parameter_unitstyle" : 1
 						}
@@ -966,10 +966,10 @@
 							"parameter_initial" : [ 0.75 ],
 							"parameter_initial_enable" : 1,
 							"parameter_linknames" : 1,
-							"parameter_longname" : "ctrl-color",
+							"parameter_longname" : "Noise Color",
 							"parameter_mmax" : 1.0,
 							"parameter_modmode" : 0,
-							"parameter_shortname" : "ctrl-color",
+							"parameter_shortname" : "Noise Color",
 							"parameter_type" : 0,
 							"parameter_unitstyle" : 1
 						}
@@ -1036,10 +1036,10 @@
 							"parameter_initial" : [ 100 ],
 							"parameter_initial_enable" : 1,
 							"parameter_linknames" : 1,
-							"parameter_longname" : "ctrl-prob",
+							"parameter_longname" : "Prob",
 							"parameter_mmax" : 100.0,
 							"parameter_modmode" : 0,
-							"parameter_shortname" : "ctrl-prob",
+							"parameter_shortname" : "Prob",
 							"parameter_type" : 0,
 							"parameter_unitstyle" : 5
 						}
@@ -1106,10 +1106,10 @@
 							"parameter_initial" : [ 0 ],
 							"parameter_initial_enable" : 1,
 							"parameter_linknames" : 1,
-							"parameter_longname" : "ctrl-jitter",
+							"parameter_longname" : "Jitter",
 							"parameter_mmax" : 5.0,
 							"parameter_modmode" : 0,
-							"parameter_shortname" : "ctrl-jitter",
+							"parameter_shortname" : "Jitter",
 							"parameter_type" : 0,
 							"parameter_unitstyle" : 2
 						}
@@ -1176,10 +1176,10 @@
 							"parameter_initial" : [ 0 ],
 							"parameter_initial_enable" : 1,
 							"parameter_linknames" : 1,
-							"parameter_longname" : "ctrl-dir",
+							"parameter_longname" : "Dir",
 							"parameter_mmax" : 3.0,
 							"parameter_modmode" : 0,
-							"parameter_shortname" : "ctrl-dir",
+							"parameter_shortname" : "Dir",
 							"parameter_steps" : 4,
 							"parameter_type" : 0,
 							"parameter_unitstyle" : 0
@@ -1259,10 +1259,10 @@
 							"parameter_initial" : [ 0.8 ],
 							"parameter_initial_enable" : 1,
 							"parameter_linknames" : 1,
-							"parameter_longname" : "ctrl-level",
+							"parameter_longname" : "Level",
 							"parameter_mmax" : 1.0,
 							"parameter_modmode" : 0,
-							"parameter_shortname" : "ctrl-level",
+							"parameter_shortname" : "Level",
 							"parameter_type" : 0,
 							"parameter_unitstyle" : 1
 						}

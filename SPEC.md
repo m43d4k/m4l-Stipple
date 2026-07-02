@@ -39,7 +39,7 @@ Internal Grid:
 - 横方向の走査カーソル
 - Live BPM 同期クロック
 - Ratio 固定の行別ピッチ割り当て
-- Internal Grid 用の Pitch Range octave 表示
+- Internal Grid 用の Range octave 表示
 - セルの ON/OFF
 - セルの明るさまたは値による velocity
 - Internal Grid 用の Probability による発音欠落
@@ -236,10 +236,10 @@ MIDI Trigger / MIDI Gate では、MIDI note 60 が Tune の周波数になる。
 midiHz = Tune * 2 ^ ((noteNumber - 60) / 12)
 ```
 
-Pitch Range は Internal Grid 専用で、row 1 から row 8 までの広がりを octave で決める。
+Range は Internal Grid 専用で、row 1 から row 8 までの pitch range を octave で決める。
 
 ```text
-Pitch Range: 0.0 oct - 4.0 oct
+Range: 0.0 oct - 4.0 oct
 UI display: 2.0 oct
 ```
 
@@ -247,7 +247,7 @@ UI display: 2.0 oct
 
 ```text
 Tune = 55.0 Hz
-Pitch Range = 3.0 oct
+Range = 3.0 oct
 
 row 1 = 55.0 Hz
 row 8 = 440.0 Hz
@@ -304,13 +304,13 @@ Grid のセル操作、Clear、Randomize は操作子数に含めない。
 
 ### SOUND
 
-- Sine Level
-- Pulse Level
-- Noise Level
+- Sine
+- Pulse
+- Noise
 - Pulse Width
 - Noise Color
 - Tune
-- Pitch Range (Internal Grid)
+- Range (Internal Grid)
 - Attack
 - Decay
 
@@ -331,10 +331,10 @@ Grid のセル操作、Clear、Randomize は操作子数に含めない。
 3. Attack
 4. Decay
 5. Tune
-6. Pitch Range (Internal Grid)
-7. Sine Level
-8. Pulse Level
-9. Noise Level
+6. Range (Internal Grid)
+7. Sine
+8. Pulse
+9. Noise
 10. Pulse Width
 11. Noise Color
 12. Probability (Internal Grid)
@@ -350,15 +350,15 @@ MVP で特に重要な操作子。
 - Attack
 - Decay
 - Tune
-- Sine Level
-- Pulse Level
-- Noise Level
+- Sine
+- Pulse
+- Noise
 - Pulse Width
 - Noise Color
 - Jitter
 - Level
 - Direction (Internal Grid)
-- Pitch Range (Internal Grid)
+- Range (Internal Grid)
 - Probability (Internal Grid)
 
 ## ランダムと欠落
@@ -480,7 +480,7 @@ UI は装飾よりも精密な操作を優先する。
 - 操作子は少数で大きく効くものを優先する
 - パネルは SCAN / GRID / SOUND / ERROR / OUT に分ける
 - Tune は Hz で数値表示する
-- Pitch Range は Internal Grid 用として oct で数値表示する
+- Range は Internal Grid 用の pitch range として oct で数値表示する
 - グリッド描画、波形、エンベロープ、グリッド補助表示などの描画UIには `jsui` ではなく `v8ui` を使う
 - 文字説明を多くせず、操作面として整理する
 
@@ -493,10 +493,10 @@ UI は装飾よりも精密な操作を優先する。
 - Step Length: fixed 1/16-equivalent
 - Decay: 5 ms
 - Tune: 261.63 Hz
-- Pitch Range: 2.0 oct
-- Sine Level: high
-- Pulse Level: low
-- Noise Level: low
+- Range: 2.0 oct
+- Sine: high
+- Pulse: low
+- Noise: low
 - Pulse Width: 25%
 - Noise Color: bright
 - Probability: 100%
@@ -507,10 +507,10 @@ UI は装飾よりも精密な操作を優先する。
 - Step Length: fixed 1/16-equivalent
 - Decay: 12 ms
 - Tune: 82.4 Hz
-- Pitch Range: 3.0 oct
-- Sine Level: medium
-- Pulse Level: medium
-- Noise Level: medium
+- Range: 3.0 oct
+- Sine: medium
+- Pulse: medium
+- Noise: medium
 - Pulse Width: 15%
 - Noise Color: neutral
 - Probability: 90%
@@ -521,10 +521,10 @@ UI は装飾よりも精密な操作を優先する。
 - Step Length: fixed 1/16-equivalent
 - Decay: 40 ms
 - Tune: 55.0 Hz
-- Pitch Range: 1.0 oct
-- Sine Level: high
-- Pulse Level: low
-- Noise Level: off
+- Range: 1.0 oct
+- Sine: high
+- Pulse: low
+- Noise: off
 - Probability: 100%
 - Jitter: 0 ms
 
@@ -553,4 +553,4 @@ MVP では以下を実装しない。
 - 同一列に複数セルがある場合は、Internal Grid では最大 8 voice まで同時に鳴らす
 - MIDI Trigger / MIDI Gate はモノフォニック入力として扱う
 - Drive / saturation は後段の Live デバイスや外部プラグインに委譲する
-- ピッチ確認時は Decay を長め、Noise Level を低め、Sine Level を高めにするとよい
+- ピッチ確認時は Decay を長め、Noise を低め、Sine を高めにするとよい
