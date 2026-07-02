@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 332.0, 293.0, 2263.0, 822.0 ],
+		"rect" : [ 603.0, 115.0, 552.0, 1035.0 ],
 		"openinpresentation" : 1,
 		"default_fontname" : "Lato",
 		"gridsize" : [ 15.0, 15.0 ],
@@ -141,7 +141,7 @@
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 240.0, 50.0, 50.0, 20.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 407.0, 43.0, 50.0, 20.0 ],
+					"presentation_rect" : [ 399.0, 76.0, 62.0, 20.0 ],
 					"text" : "clear",
 					"textjustification" : 1
 				}
@@ -157,7 +157,7 @@
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 310.0, 50.0, 75.0, 20.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 328.0, 43.0, 75.0, 20.0 ],
+					"presentation_rect" : [ 399.0, 49.0, 62.0, 20.0 ],
 					"text" : "randomize",
 					"textjustification" : 1
 				}
@@ -173,9 +173,9 @@
 					"numoutlets" : 2,
 					"outlettype" : [ "", "" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 170.0, 88.0, 420.0, 98.0 ],
+					"patching_rect" : [ 170.0, 88.0, 390.0, 98.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 2.0, 71.0, 420.0, 98.0 ],
+					"presentation_rect" : [ 2.0, 71.0, 390.0, 98.0 ],
 					"textfile" : 					{
 						"filename" : "_stipple_grid.js",
 						"flags" : 0,
@@ -197,7 +197,7 @@
 					"numoutlets" : 0,
 					"patching_rect" : [ 830.0, 35.0, 50.0, 18.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 237.0, 34.0, 50.0, 18.0 ],
+					"presentation_rect" : [ 234.0, 34.0, 50.0, 18.0 ],
 					"text" : "Mode"
 				}
 
@@ -212,7 +212,7 @@
 					"parameter_enable" : 1,
 					"patching_rect" : [ 830.0, 55.0, 145.0, 15.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 237.0, 52.0, 83.0, 15.0 ],
+					"presentation_rect" : [ 237.0, 51.0, 92.0, 15.0 ],
 					"saved_attribute_attributes" : 					{
 						"valueof" : 						{
 							"parameter_enum" : [ "Internal Grid", "MIDI Trigger", "MIDI Gate" ],
@@ -532,7 +532,8 @@
 							"parameter_shortname" : "Tune",
 							"parameter_steps" : 86001,
 							"parameter_type" : 0,
-							"parameter_units" : "%0.2f Hz"
+							"parameter_units" : "%0.2f Hz",
+							"parameter_unitstyle" : 0
 						}
 
 					}
@@ -575,7 +576,7 @@
 					"numoutlets" : 0,
 					"patching_rect" : [ 20.0, 240.0, 84.0, 18.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 421.0, 93.0, 68.0, 18.0 ],
+					"presentation_rect" : [ 396.0, 100.0, 68.0, 18.0 ],
 					"text" : "Range oct",
 					"textjustification" : 1
 				}
@@ -591,7 +592,7 @@
 					"parameter_enable" : 1,
 					"patching_rect" : [ 20.0, 260.0, 80.0, 15.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 430.0, 111.0, 50.0, 15.0 ],
+					"presentation_rect" : [ 399.0, 118.0, 62.0, 15.0 ],
 					"saved_attribute_attributes" : 					{
 						"valueof" : 						{
 							"parameter_initial" : [ 2 ],
@@ -1136,7 +1137,7 @@
 					"numoutlets" : 0,
 					"patching_rect" : [ 20.0, 680.0, 85.0, 18.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 421.0, 128.0, 68.0, 18.0 ],
+					"presentation_rect" : [ 396.0, 134.0, 68.0, 18.0 ],
 					"text" : "Direction",
 					"textjustification" : 1
 				}
@@ -1152,7 +1153,7 @@
 					"parameter_enable" : 1,
 					"patching_rect" : [ 20.0, 700.0, 80.0, 15.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 430.0, 146.0, 50.0, 15.0 ],
+					"presentation_rect" : [ 399.0, 152.0, 62.0, 15.0 ],
 					"saved_attribute_attributes" : 					{
 						"valueof" : 						{
 							"parameter_initial" : [ 0 ],
