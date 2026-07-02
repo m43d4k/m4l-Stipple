@@ -132,13 +132,6 @@ function triggerCurrentStep() {
   mgraphics.redraw();
 }
 
-function reset() {
-  currentStep = -1;
-  pingpongDir = 1;
-  outlet(1, currentStep);
-  mgraphics.redraw();
-}
-
 function clear() {
   for (let row = 0; row < ROWS; row += 1) {
     cells[row].fill(0);

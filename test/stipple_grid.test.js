@@ -61,7 +61,6 @@ globalThis.__testApi = {
   bang,
   step_abs,
   step,
-  reset,
   clear,
   randomize,
   tune,
@@ -200,19 +199,20 @@ test("direction modes advance reverse and ping-pong as expected", () => {
   api.bang();
   assert.equal(api.currentStep, 31);
 
-  api.dir(2);
-  api.reset();
-  api.bang();
-  assert.equal(api.currentStep, 0);
-  assert.equal(api.pingpongDir, 1);
+  const { api: pingpongApi } = createGridHarness();
 
-  api.step_abs(30);
-  api.bang();
-  assert.equal(api.currentStep, 31);
-  assert.equal(api.pingpongDir, -1);
+  pingpongApi.dir(2);
+  pingpongApi.bang();
+  assert.equal(pingpongApi.currentStep, 0);
+  assert.equal(pingpongApi.pingpongDir, 1);
 
-  api.bang();
-  assert.equal(api.currentStep, 30);
+  pingpongApi.step_abs(30);
+  pingpongApi.bang();
+  assert.equal(pingpongApi.currentStep, 31);
+  assert.equal(pingpongApi.pingpongDir, -1);
+
+  pingpongApi.bang();
+  assert.equal(pingpongApi.currentStep, 30);
 });
 
 test("list clamps cell coordinates and velocity", () => {
