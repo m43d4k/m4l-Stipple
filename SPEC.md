@@ -427,12 +427,14 @@ MIDI note on/off を gate として扱う。
 
 note on 中は envelope target が velocity に保たれ、note off 後は `Decay` で減衰する。
 
-MIDI Gate はモノフォニックで、ノートスタックや発音中ノートの優先順位管理は持たない。`notein` の最新 note number を pitch として使い、velocity が 0 になると gate を閉じる。
+MIDI Gate は一般的なモノシンセの挙動に合わせ、モノフォニック入力として押下中ノートを保持し、last-note priority で発音対象を決める。
+重複ノート中は、最後に押されたノートを pitch として使う。最後に押されたノートを離した時に他のノートがまだ押されている場合は、直前に有効だった押下中ノートへ pitch を戻し、gate は閉じない。
+gate は押下中ノートが 0 個になった時だけ閉じる。
 
 ```text
 MIDI note number -> pitch relative to Tune
 MIDI velocity    -> gate level / voice velocity
-note off         -> gate close
+note off         -> gate close only when no notes remain held
 release          -> Decay
 ```
 

@@ -19,6 +19,7 @@ Sine / Pulse / Noise を音源にした Max for Live シンセデバイス。
 - Probability による Internal Grid の発音欠落
 - Pitch Range による Internal Grid の行別ピッチ幅の調整
 - MIDI Trigger / MIDI Gate では MIDI note 60 を Tune の基準として発音
+- MIDI Gate は重複ノート時に last-note priority で発音対象を決める
 - Internal Grid / MIDI Trigger / MIDI Gate 共通の Jitter
 
 ## モード
