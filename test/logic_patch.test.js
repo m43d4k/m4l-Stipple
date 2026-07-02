@@ -45,12 +45,16 @@ test("MIDI Trigger click is routed through the jitter delay chain", () => {
   const patcher = loadPatch();
   const boxes = boxesById(patcher);
 
+  assert.equal(boxes.get("obj-213").text, "v8 _stipple_midi_trigger.js");
   assert.equal(boxes.get("obj-199").text, "t b b l");
   assert.equal(boxes.get("obj-204").text, "random 1000");
   assert.equal(boxes.get("obj-205").text, "/ 1000.");
   assert.equal(boxes.get("obj-206").text, "* 0.");
   assert.equal(boxes.get("obj-207").text, "delay 0.");
 
+  assert.equal(hasLine(patcher, "obj-176", 0, "obj-213", 0), true);
+  assert.equal(hasLine(patcher, "obj-213", 0, "obj-199", 0), true);
+  assert.equal(hasLine(patcher, "obj-84", 0, "obj-213", 0), true);
   assert.equal(hasLine(patcher, "obj-199", 2, "obj-200", 0), true);
   assert.equal(hasLine(patcher, "obj-199", 1, "obj-204", 0), true);
   assert.equal(hasLine(patcher, "obj-204", 0, "obj-205", 0), true);
@@ -65,18 +69,25 @@ test("MIDI Gate event list is routed through the jitter pipe chain", () => {
   const patcher = loadPatch();
   const boxes = boxesById(patcher);
 
+  assert.equal(boxes.get("obj-214").text, "v8 _stipple_midi_gate_probability.js");
   assert.equal(boxes.get("obj-208").text, "t l b");
-  assert.equal(boxes.get("obj-209").text, "pipe 0");
+  assert.equal(boxes.get("obj-209").text, "pipe 0 0 0");
+  assert.equal(boxes.get("obj-209").numinlets, 3);
+  assert.equal(boxes.get("obj-209").numoutlets, 2);
   assert.equal(boxes.get("obj-210").text, "random 1000");
   assert.equal(boxes.get("obj-211").text, "/ 1000.");
   assert.equal(boxes.get("obj-212").text, "* 0.");
 
+  assert.equal(hasLine(patcher, "obj-203", 0, "obj-214", 0), true);
+  assert.equal(hasLine(patcher, "obj-214", 0, "obj-201", 0), true);
   assert.equal(hasLine(patcher, "obj-201", 0, "obj-208", 0), true);
   assert.equal(hasLine(patcher, "obj-208", 1, "obj-210", 0), true);
   assert.equal(hasLine(patcher, "obj-210", 0, "obj-211", 0), true);
   assert.equal(hasLine(patcher, "obj-211", 0, "obj-212", 0), true);
-  assert.equal(hasLine(patcher, "obj-212", 0, "obj-209", 1), true);
+  assert.equal(hasLine(patcher, "obj-212", 0, "obj-209", 2), true);
   assert.equal(hasLine(patcher, "obj-208", 0, "obj-209", 0), true);
-  assert.equal(hasLine(patcher, "obj-209", 0, "obj-202", 0), true);
+  assert.equal(hasLine(patcher, "obj-209", 0, "obj-183", 0), true);
+  assert.equal(hasLine(patcher, "obj-209", 1, "obj-185", 0), true);
   assert.equal(hasLine(patcher, "obj-73", 0, "obj-212", 1), true);
+  assert.equal(hasLine(patcher, "obj-84", 0, "obj-214", 0), true);
 });

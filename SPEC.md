@@ -42,7 +42,7 @@ Internal Grid:
 - Internal Grid 用の Range octave 表示
 - セルの ON/OFF
 - セルの明るさまたは値による velocity
-- Internal Grid 用の Probability による発音欠落
+- Internal Grid / MIDI Trigger / MIDI Gate 共通の Probability による発音欠落
 
 MIDI:
 
@@ -316,7 +316,7 @@ Grid のセル操作、Clear、Randomize は操作子数に含めない。
 
 ### ERROR
 
-- Probability (Internal Grid)
+- Probability
 - Jitter
 
 ### OUT
@@ -337,7 +337,7 @@ Grid のセル操作、Clear、Randomize は操作子数に含めない。
 9. Noise
 10. Pulse Width
 11. Noise Color
-12. Probability (Internal Grid)
+12. Probability
 13. Jitter
 14. Level
 ```
@@ -359,22 +359,26 @@ MVP で特に重要な操作子。
 - Level
 - Direction (Internal Grid)
 - Range (Internal Grid)
-- Probability (Internal Grid)
+- Probability
 
 ## ランダムと欠落
 
 Stipple の方向性では、ランダムを主役にしない。
 
-ランダムはパターンを崩すためではなく、Internal Grid の機械的な反復に小さな欠けを作るために使う。
+ランダムはパターンを崩すためではなく、機械的な反復に小さな欠けを作るために使う。
 
 ### Probability
 
-Internal Grid で、セルが ON でも指定確率でのみ発音する。
+Internal Grid / MIDI Trigger / MIDI Gate で、発音イベントを指定確率でのみ通す。
 
 ```text
 100% = 常に発音
 80% = 20% の確率で欠落
 ```
+
+Internal Grid では ON セルごとに判定する。
+MIDI Trigger では note-on ごとに判定し、外れた note-on は発音しない。
+MIDI Gate では note-on ごとに判定し、外れた note-on と対応する note-off は gate 本体へ渡さない。
 
 ### Jitter
 
@@ -428,6 +432,7 @@ MIDI note number -> pitch relative to Tune
 MIDI velocity    -> hit strength
 note off         -> ignored
 length           -> Decay
+probability      -> applied per note-on
 ```
 
 ステップごとにパラメータを保持できる外部 MIDI シーケンサーと組み合わせる用途を想定する。
@@ -447,6 +452,7 @@ MIDI note number -> pitch relative to Tune
 MIDI velocity    -> gate level / voice velocity
 note off         -> gate close only when no notes remain held
 release          -> Decay
+probability      -> applied per note-on before held-note tracking
 ```
 
 キーボード演奏や通常の MIDI クリップで音価を外部から制御したい場合に使う。

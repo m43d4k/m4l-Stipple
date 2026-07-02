@@ -16,7 +16,7 @@ Sine / Pulse / Noise を音源にした Max for Live シンセデバイス。
 - 32 columns x 8 rows のグリッド
 - 起動時は row 0 に 4 step 間隔の最小パターンを配置
 - Live BPM / Transport 同期
-- Probability による Internal Grid の発音欠落
+- Probability による発音欠落
 - Range による Internal Grid の行別ピッチ幅の調整
 - Direction による Internal Grid の走査方向切り替え
 - MIDI Trigger / MIDI Gate では MIDI note 60 を Tune の基準として発音
@@ -42,5 +42,5 @@ Sine / Pulse / Noise を音源にした Max for Live シンセデバイス。
 - Range: Internal Grid の最下段から最上段までのピッチ幅を octave で指定する
 - Pulse Width: パルス波の幅を調整する
 - Noise Color: ノイズの暗さから明るさまでを調整する
-- Probability: Internal Grid のセル発音を確率で間引く
+- Probability: 発音を確率で間引く
 - Jitter: 発音タイミングに短い遅延を加える
