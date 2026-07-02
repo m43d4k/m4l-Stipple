@@ -30,6 +30,17 @@ test("logic patch has unique object ids", () => {
   assert.equal(uniqueIds.size, ids.length);
 });
 
+test("Live sync sends unwrapped absolute steps to the grid", () => {
+  const patcher = loadPatch();
+  const boxes = boxesById(patcher);
+
+  assert.equal(boxes.get("obj-4").text, "expr int(floor($f1 * 4.))");
+  assert.equal(boxes.get("obj-7").text, "i");
+  assert.equal(hasLine(patcher, "obj-6", 0, "obj-7", 0), true);
+  assert.equal(hasLine(patcher, "obj-7", 0, "obj-8", 0), true);
+  assert.equal(boxes.get("obj-8").text, "prepend step_abs");
+});
+
 test("MIDI Trigger click is routed through the jitter delay chain", () => {
   const patcher = loadPatch();
   const boxes = boxesById(patcher);

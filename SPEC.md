@@ -133,10 +133,11 @@ Internal Grid は Live の BPM と Transport に同期する。
 - Live 停止中は走査を停止する
 - Live の再生開始位置、途中再生位置、ループ位置に追従する
 - BPM 変更に追従する
-- MVP 実装では Division 操作子は持たず、`plugsync~` の累積 beat 位置から 1/16 相当の step を算出する
+- MVP 実装では Division 操作子は持たず、`plugsync~` の累積 beat 位置から 1/16 相当の絶対 step を算出する
+- Internal Grid の実際の走査列は、絶対 step と `Direction` から決める
 
 ```text
-step = floor(beats * 4) % 32
+absoluteStep = floor(beats * 4)
 ```
 
 ### Step Length
@@ -397,13 +398,23 @@ Live sync と内蔵 32 x 8 グリッドで発音する。
 
 既存のセル値が velocity になり、行が pitch になる。
 
-Live sync 中は beat 位置から絶対 step を算出するため、グリッド走査は常に左から右へ進む。`Direction` は `bang` による手動進行時の走査方向に効く。
+Live sync 中は beat 位置から絶対 step を算出し、`Direction` に応じて Internal Grid の走査列へ変換する。
+`Direction` は Live sync と `bang` による手動進行の両方に効く。
 
 ```text
 0 = forward
 1 = reverse
 2 = pingpong
 3 = random
+```
+
+Live sync 中の各方向は以下のように絶対 step から列を決める。
+
+```text
+forward  = absoluteStep % 32
+reverse  = 31 - (absoluteStep % 32)
+pingpong = 0..31..0 の往復
+random   = step 更新ごとにランダムな列
 ```
 
 ### MIDI Trigger

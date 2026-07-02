@@ -92,7 +92,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "int" ],
 					"patching_rect" : [ 410.0, 88.0, 45.0, 23.0 ],
-					"text" : "% 32"
+					"text" : "i"
 				}
 
 			}

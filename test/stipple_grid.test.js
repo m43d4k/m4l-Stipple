@@ -75,6 +75,7 @@ globalThis.__testApi = {
   onclick,
   ondrag,
   rowToHz,
+  directedStepFromAbsolute,
   paint
 };`, context, { filename: "_stipple_grid.js" });
 
@@ -138,6 +139,58 @@ test("step_abs wraps absolute steps and avoids retriggering the same step", () =
     [0, [0, 261.63, 1]],
     [1, 0]
   ]);
+});
+
+test("step_abs applies reverse direction to absolute Live sync steps", () => {
+  const { api, outlets, clearOutlets } = createGridHarness();
+
+  api.dir(1);
+  api.step_abs(0);
+  assert.equal(api.currentStep, 31);
+  assert.deepEqual(plain(outlets), [[1, 31]]);
+
+  clearOutlets();
+  api.step_abs(32);
+  assert.equal(api.currentStep, 31);
+  assert.deepEqual(plain(outlets), []);
+
+  api.step_abs(33);
+  assert.equal(api.currentStep, 30);
+});
+
+test("step_abs applies ping-pong direction to unwrapped Live sync steps", () => {
+  const { api } = createGridHarness();
+
+  api.dir(2);
+
+  api.step_abs(0);
+  assert.equal(api.currentStep, 0);
+
+  api.step_abs(31);
+  assert.equal(api.currentStep, 31);
+
+  api.step_abs(32);
+  assert.equal(api.currentStep, 30);
+
+  api.step_abs(61);
+  assert.equal(api.currentStep, 1);
+
+  api.step_abs(62);
+  assert.equal(api.currentStep, 0);
+});
+
+test("step_abs random direction can retrigger even when the same column is selected", () => {
+  const { api, outlets } = createGridHarness();
+
+  api.dir(3);
+  api.seedmsg(0);
+  api.step_abs(0);
+  const firstStep = api.currentStep;
+  api.seedmsg(0);
+  api.step_abs(1);
+
+  assert.equal(api.currentStep, firstStep);
+  assert.equal(outlets.filter(([index]) => index === 1).length, 2);
 });
 
 test("direction modes advance reverse and ping-pong as expected", () => {

@@ -50,6 +50,34 @@ function rowToHz(row) {
   return tuneHz * Math.pow(2, rangeOct * rowRatio);
 }
 
+function wrapStep(value) {
+  return ((value % COLS) + COLS) % COLS;
+}
+
+function pingpongStep(value) {
+  const period = (COLS - 1) * 2;
+  const phase = ((value % period) + period) % period;
+  return phase <= COLS - 1 ? phase : period - phase;
+}
+
+function directedStepFromAbsolute(value) {
+  const absoluteStep = Math.floor(Number(value) || 0);
+
+  if (direction === 1) {
+    return COLS - 1 - wrapStep(absoluteStep);
+  }
+
+  if (direction === 2) {
+    return pingpongStep(absoluteStep);
+  }
+
+  if (direction === 3) {
+    return Math.floor(rand() * COLS);
+  }
+
+  return wrapStep(absoluteStep);
+}
+
 function advanceStep() {
   if (direction === 1) {
     currentStep = currentStep <= 0 ? COLS - 1 : currentStep - 1;
@@ -80,8 +108,8 @@ function bang() {
 }
 
 function step_abs(value) {
-  const nextStep = ((Math.floor(Number(value)) % COLS) + COLS) % COLS;
-  if (nextStep === currentStep) {
+  const nextStep = directedStepFromAbsolute(value);
+  if (direction !== 3 && nextStep === currentStep) {
     return;
   }
   currentStep = nextStep;
