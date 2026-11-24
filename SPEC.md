@@ -2,156 +2,33 @@
 
 ## 概要
 
-`Stipple` は、Sine / Pulse / Noise を音源にした Max for Live シンセデバイスである。
-
-入力モードは Internal Grid / MIDI Trigger / MIDI Gate の 3 つである。どれか 1 つを主モードとして扱うのではなく、同じ音源と共通パラメータを異なる入力方法で鳴らす設計とする。
-
-Internal Grid は内蔵グリッドで発音タイミングとピッチを決める。MIDI Trigger と MIDI Gate は外部 MIDI note でピッチと発音を制御する。
+`Stipple` は、Sine / Pulse / Noise を音源にした外部 MIDI シーケンサー向けの Max for Live シンセデバイスである。発音位置とノート長は外部シーケンサーで組み、Stipple では音の輪郭を作る。
 
 ## 方向性
 
 - 精密でミニマルな電子音を作る
-- サイン波、パルス波、ノイズを音源にする
-- 短いエンベロープでクリック、トーン、低域パルスを作る
-- Internal Grid / MIDI Trigger / MIDI Gate を同格の入力モードとして扱う
-- Internal Grid では、デバイス単体でパターンを生成できる
-- MIDI Trigger / MIDI Gate では、外部 MIDI クリップや鍵盤から発音を制御できる
-- Live の BPM と Transport への同期は Internal Grid で使う
-- ランダム要素は控えめにし、Internal Grid の反復に小さな欠けを作る用途に限定する
+- rasternoton のような無機質なクリック、パルス、短いトーンを想定する
+- ランダム要素は機械的な反復に小さな欠けやタイミングの揺れを加えるために使う
 
-## MVP
+## Live Set の互換性
 
-最初の実装範囲は以下とする。
+改修版は新規インスタンスとして使う前提とする。互換性の対象は、改修版のインスタンスで保存されたパラメータ値とオートメーションに限る。
 
-共通:
+## 改修範囲
 
-- サイン波オシレーター
-- パルス波オシレーター
-- ノイズジェネレーター
-- 調整可能な Attack / Decay エンベロープ
-- Tune の基音 Hz 表示
-- Internal Grid / MIDI Trigger / MIDI Gate 共通の Jitter による微小なタイミング揺れ
+- サイン波、パルス波、ノイズの 3 音源
+- 音源ごとに調整できる Attack / Decay アンプエンベロープ
+- Sine / Pulse 共通のピッチエンベロープ
+- Sine / Pulse 共通の Detune
+- MIDI Trigger / MIDI Gate 共通の Probability と Jitter
 - 出力 Level
-
-Internal Grid:
-
-- 32 columns x 8 rows のグリッド
-- 横方向の走査カーソル
-- Live BPM 同期クロック
-- Ratio 固定の行別ピッチ割り当て
-- Internal Grid 用の Range octave 表示
-- セルの ON/OFF
-- セルの明るさまたは値による velocity
-- Internal Grid / MIDI Trigger / MIDI Gate 共通の Probability による発音欠落
-
-MIDI:
-
-- MIDI Trigger
-- MIDI Gate
 
 ## 入力モード
 
-入力モードは `Mode` で切り替える。
+`Mode` で MIDI Trigger と MIDI Gate を切り替える。どちらもモノフォニックとする。
 
-```text
-0. Internal Grid
-1. MIDI Trigger
-2. MIDI Gate
-```
-
-- Internal Grid: 内蔵グリッドを Live Transport に同期して発音する。
-- MIDI Trigger: MIDI note on で発音し、note off は音価として使わない。
-- MIDI Gate: MIDI note on/off を gate として扱い、音価を外部 MIDI で制御する。
-
-## Internal Grid のグリッド
-
-グリッドは Internal Grid モードで音を鳴らすタイミングと高さを決める表である。
-
-```text
-time →
-pitch ↑
-
-8 | . . x . . . x .
-7 | . x . . . . . .
-6 | . . . x . . . .
-5 | . . . . . x . .
-4 | x . . . x . . .
-3 | . . . . . . . x
-2 | . . x . . . . .
-1 | . . . . x . . .
-    1 2 3 4 5 6 7 8
-```
-
-- 横軸: 時間ステップ
-- 縦軸: ピッチ
-- セル ON: そのタイミングで発音
-- セル値: velocity
-- 現在列: 走査カーソル位置
-
-32 columns の場合、1周は 32 step になる。
-
-## Internal Grid
-
-Internal Grid では、グリッド自体を内蔵シーケンサーとして扱う。
-
-起動時は空グリッドではなく、row 0 に 4 step 間隔の最小パターンを持つ。
-
-```text
-Live Transport
-↓
-Tempo-synced Clock
-↓
-Scan Cursor
-↓
-Grid Pattern
-↓
-Voice Trigger
-↓
-Sine + Pulse + Noise Synth
-↓
-Output
-```
-
-各ステップの処理は以下。
-
-1. クロックを受け取る
-2. 走査カーソルを次の列へ進める
-3. 現在列の ON セルを読む
-4. 行から pitch を決める
-5. セル値から velocity を決める
-6. Probability を適用する
-7. Jitter を適用する
-8. サイン波、パルス波、ノイズを短く発音する
-
-## BPM 同期
-
-Internal Grid は Live の BPM と Transport に同期する。
-
-### 動作
-
-- Live 再生中のみ走査する
-- Live 停止中は走査を停止する
-- Live の再生開始位置、途中再生位置、ループ位置に追従する
-- BPM 変更に追従する
-- MVP 実装では Division 操作子は持たず、`plugsync~` の累積 beat 位置から 1/16 相当の絶対 step を算出する
-- Internal Grid の実際の走査列は、絶対 step と `Direction` から決める
-
-```text
-absoluteStep = floor(beats * 4)
-```
-
-### Step Length
-
-MVP 実装では step length は固定である。
-
-```text
-BPM 120, fixed 1/16-equivalent step
-1 step = 0.125 sec
-16 steps = 1 bar
-32 steps = 2 bars
-```
-
-Division 操作子は廃止し、MVP 以降も固定 step length を基本とする。
+- **MIDI Trigger** は Note On で発音する AD。発音後の減衰は各音源の Decay で決める。
+- **MIDI Gate** は Note On / Off をゲートとして扱う ASR。ノート長で音価を決め、ゲートが閉じた後は各音源の Decay でリリースする。
 
 ## 音源
 
@@ -208,111 +85,75 @@ neutral = white noise
 bright = highpass noise
 ```
 
+Noise Color の値に応じてノイズ成分のゲインを補正し、RMS をニュートラル（白色ノイズ）時にそろえる。
+
 ## ピッチ
 
-縦 8 行を pitch に割り当てる。
-
-初期仕様では、下の行ほど低く、上の行ほど高くする。
+MIDI Trigger / MIDI Gate の基準ピッチは、Live の A3（MIDI note 69）を 440 Hz とする。Detune は Sine と Pulse に共通で適用し、−50〜+50 cents の範囲で調整する。初期値は 0 cents とする。
 
 ```text
-row 1 = lowest pitch
-row 8 = highest pitch
+midiHz = 440 * 2 ^ ((noteNumber - 69) / 12 + detuneCents / 1200)
 ```
 
-MVP では Ratio Mode 固定とする。
+## アンプエンベロープ
 
-Tune は基準周波数を Hz で決める。
+Sine、Pulse、Noise にそれぞれ独立したアンプエンベロープを持たせ、音源ごとに Attack と Decay を調整できるようにする。各音源にエンベロープを適用した後でミックスする。
 
-```text
-Tune: 20.0 Hz - 880.0 Hz
-UI display: 261.63 Hz
-```
+各エンベロープの Decay は、MIDI Trigger では発音後の減衰、MIDI Gate ではゲートが閉じた後のリリースに使う。
 
-Internal Grid では、Tune は row 1 の基音周波数になる。
+発音中に音源ごとの Attack または Decay を変更したときは、その時点のエンベロープ振幅を引き継ぎ、新しい速さで処理を続ける。
 
-MIDI Trigger / MIDI Gate では、MIDI note 60 が Tune の周波数になる。MIDI ノートは Tune からの半音差として扱う。
+各音源の Attack の範囲は 0〜20 ms、Decay の範囲は 1〜500 ms とする。Attack でクリックの立ち上がりを調整する。短い Decay はクリックやデータ音、中程度ではピッチ感のあるパルス、長くするとミニマルなトーンになる。
 
-```text
-midiHz = Tune * 2 ^ ((noteNumber - 60) / 12)
-```
+Sine と Pulse の波形は共通の位相から生成する。
 
-Range は Internal Grid 専用で、row 1 から row 8 までの pitch range を octave で決める。
+### リトリガー時の挙動
 
-```text
-Range: 0.0 oct - 4.0 oct
-UI display: 2.0 oct
-```
+前の音の減衰やリリース中に次の発音が始まる場合、各アンプエンベロープの振幅と Sine／Pulse の共通位相を両方引き継ぐ実装を試聴の基準とする。
 
-例:
+基準の実装に対して、振幅だけをリセットする場合と共通位相だけをリセットする場合を個別に比較する。単発のクリックの質感と高速連打時の音色を試聴し、選んだ挙動をデバイスの固定仕様とする。
 
-```text
-Tune = 55.0 Hz
-Range = 3.0 oct
+## ピッチエンベロープ
 
-row 1 = 55.0 Hz
-row 8 = 440.0 Hz
-```
+Sine と Pulse に共通のピッチエンベロープを追加する。Jitter 適用後、アンプと同じタイミングで一度だけ立ち上げる。MIDI Trigger では各発音の開始時、MIDI Gate ではゲートが開くときに立ち上げる。ゲートが開いたまま音程が切り替わる場合は、進行中の減衰を続ける。
 
-中間行は row 1 と row 8 の間に指数的に配置する。
+エンベロープは Decay のみとし、発音直後のピッチから基準ピッチへ高速に指数減衰する。DSP ではホストのサンプルレートに合わせて、エンベロープをサンプルごとに更新する。
 
-```text
-rowRatio = rowIndex / 7
-rowHz = Tune * 2 ^ (PitchRangeOct * rowRatio)
-```
+| パラメータ | 範囲 | 初期値 |
+| --- | --- | --- |
+| Amount | −48〜+48 半音 | +24 半音 |
+| Decay | 0.1〜500 ms | 10 ms |
+| On/Off | ON / OFF | OFF |
 
-この方式は鍵盤音程を厳密に弾くためではなく、スペアナや耳で確認しながら目的の周波数へ合わせるための設計である。
+範囲と初期値は初期実装用の暫定値とし、試聴後に調整する。
 
-将来的な拡張候補として Chromatic Mode や Linear Hz Mode は考えられるが、MVP では実装しない。
+- **Amount** は発音直後のピッチと基準ピッチの差を設定する。正の値では上から、負の値では下から基準ピッチに戻る。
+- **Decay** は、一定の設定で発音開始時のピッチ変調量の 1% に達するまでの時間とする。発音中に変更した場合は、その時点のエンベロープ値から新しい速さで減衰を続ける。
+- **On/Off** はピッチへの適用を切り替える。オフの間もエンベロープは進行し、オンへ戻すとその時点の残量が反映される。
 
-## エンベロープ
-
-短い Attack / Decay エンベロープを使う。
-
-主な範囲:
-
-```text
-Attack: 0-10 ms
-Decay: 1-5000 ms
-```
-
-Decay は音のキャラクターを決める最重要操作子のひとつである。
-
-Attack はクリック感を調整するために使う。
-
-- 短い Decay: クリック、データ音
-- 中程度の Decay: ピッチ感のあるパルス
-- 長い Decay: ミニマルなトーン
+発音中の Amount と On/Off の変更は、進行中のエンベロープによるピッチ変化量に反映する。操作による急なピッチの飛びを抑えるため、変更を短く平滑化する。
 
 ## 操作子
 
-操作子は最大 16 個まで許容する。Drive は外部サチュレーターへ委譲し、MVP では 14 個に収める。
+改修範囲の操作子は以下の 19 項目とする。Drive は外部サチュレーターへ委譲する。
 
-Grid のセル操作、Clear、Randomize は操作子数に含めない。
-
-### SCAN
+### MIDI
 
 - Mode
-- Direction (Internal Grid)
-
-### GRID
-
-- 32 x 8 cells
-- Cell On/Off
-- Cell Velocity
-- Clear
-- Randomize
 
 ### SOUND
 
-- Sine
-- Pulse
-- Noise
+- Sine、Pulse、Noise の各レベル
 - Pulse Width
 - Noise Color
-- Tune
-- Range (Internal Grid)
-- Attack
-- Decay
+- Sine Attack、Sine Decay
+- Pulse Attack、Pulse Decay
+- Noise Attack、Noise Decay
+
+### PITCH
+
+- Detune
+- Pitch Envelope の Amount、Decay、On/Off
 
 ### ERROR
 
@@ -323,157 +164,67 @@ Grid のセル操作、Clear、Randomize は操作子数に含めない。
 
 - Level
 
-### MVP 操作子一覧
-
-```text
-1. Mode
-2. Direction (Internal Grid)
-3. Attack
-4. Decay
-5. Tune
-6. Range (Internal Grid)
-7. Sine
-8. Pulse
-9. Noise
-10. Pulse Width
-11. Noise Color
-12. Probability
-13. Jitter
-14. Level
-```
-
-## 最重要操作子
-
-MVP で特に重要な操作子。
-
-- Mode
-- Attack
-- Decay
-- Tune
-- Sine
-- Pulse
-- Noise
-- Pulse Width
-- Noise Color
-- Jitter
-- Level
-- Direction (Internal Grid)
-- Range (Internal Grid)
-- Probability
-
 ## ランダムと欠落
-
-Stipple の方向性では、ランダムを主役にしない。
-
-ランダムはパターンを崩すためではなく、機械的な反復に小さな欠けを作るために使う。
 
 ### Probability
 
-Internal Grid / MIDI Trigger / MIDI Gate で、発音イベントを指定確率でのみ通す。
+MIDI Trigger / MIDI Gate で、Note On ごとに発音確率を判定する。
 
 ```text
 100% = 常に発音
 80% = 20% の確率で欠落
 ```
 
-Internal Grid では ON セルごとに判定する。
-MIDI Trigger では note-on ごとに判定し、外れた note-on は発音しない。
-MIDI Gate では note-on ごとに判定し、外れた note-on と対応する note-off は gate 本体へ渡さない。
+MIDI Gate は、判定を通過した Note On と対応する Note Off をゲート処理に渡す。
 
 ### Jitter
 
-発音タイミングに微小な遅延を加える。
+MIDI Trigger と MIDI Gate の両方に、発音タイミングをランダムに遅らせる Jitter を適用する。Jitter の設定範囲は 0〜5 ms とし、適用する遅延量もこの範囲に収める。
 
-推奨範囲:
+- **MIDI Trigger** では、Note On ごとに遅延を決める。
+- **MIDI Gate** では、MIDI ノートごとに遅延量を決め、対応する Note On と Note Off に同じ量を適用する。たとえば Jitter が 5 ms で、ある Note On に 3 ms の遅延が決まった場合、対応する Note Off も 3 ms 遅らせる。これにより、そのノートの長さと Note On／Off の順序を保つ。同じ音程の Note On が重なった場合は、Note Off を未対応のうち最も古い Note On に対応させる（FIFO）。
 
-```text
-0-5 ms
-```
+両モードで、異なるノート間のイベント順序も保つ。遅延後の時刻が同じイベントは入力順に処理する。連続するノートや重なるノートでは、ノートごとの遅延量を独立に抽選することよりも、イベント順序と各 MIDI ノート長の維持を優先する。
 
-Jitter は Internal Grid / MIDI Trigger / MIDI Gate すべての発音に適用する。
+Jitter の設定変更は、その後に受け付ける Note On の遅延選択から適用する。確定した遅延量を保持し、MIDI Gate では設定変更後に届いた Note Off にも、対応する Note On で決めた遅延量を使う。
+
+設定値を下げた直後は、確定済みの遅延に起因するイベント順序の制約が残る間に限り、新しい設定値を超える遅延を許容する。遅延量の絶対上限は 5 ms とする。
 
 ## 入力モード詳細
 
-実装上は Internal Grid / MIDI Trigger / MIDI Gate の各エンジンが並列に存在し、`Mode` は最終段で audible な音声出力を選択する。選択されていないエンジンも内部処理や入力追従は継続するが、出力はミュートされる。
+実装上は MIDI Trigger / MIDI Gate の各エンジンが並列に存在し、`Mode` は最終段で音声出力を選択する。両エンジンは入力に追従し、選択した側の音声を出力する。
 
-### Internal Grid
-
-Live sync と内蔵 32 x 8 グリッドで発音する。
-
-既存のセル値が velocity になり、行が pitch になる。
-
-Live sync 中は beat 位置から絶対 step を算出し、`Direction` に応じて Internal Grid の走査列へ変換する。
-`Direction` は Live sync と `bang` による手動進行の両方に効く。
-
-```text
-0 = forward
-1 = reverse
-2 = pingpong
-3 = random
-```
-
-Live sync 中の各方向は以下のように絶対 step から列を決める。
-
-```text
-forward  = absoluteStep % 32
-reverse  = 31 - (absoluteStep % 32)
-pingpong = 0..31..0 の往復
-random   = step 更新ごとにランダムな列
-```
+Probability、Jitter、Gate のノート管理は Max のイベント処理用 `gen` で実行し、発音・消音を `pipe` に予約する。Gate が保持する未対応 Note On は、Probability で落ちたものも含めて最大 128 件とする。上限を超えた分は Gate の発音を見送り、同じ MIDI チャンネル・音程の Note Off と入力順に対応させる。上限を超えた場合は Max コンソールに表示する。
 
 ### MIDI Trigger
 
-MIDI note on で発音する。
-
-note off は音価としては使わない。発音長と減衰はデバイス側の `Decay` が決める。
+MIDI Note On で発音する。発音長と減衰は音源ごとの `Decay` が決める。
 
 ```text
-MIDI note number -> pitch relative to Tune
+MIDI note number -> standard MIDI pitch plus Detune
 MIDI velocity    -> hit strength
-note off         -> ignored
-length           -> Decay
-probability      -> applied per note-on
+Note Off         -> ignored
+length           -> per-source Decay
+probability      -> applied per Note On
 ```
 
 ステップごとにパラメータを保持できる外部 MIDI シーケンサーと組み合わせる用途を想定する。
 
 ### MIDI Gate
 
-MIDI note on/off を gate として扱う。
+MIDI Note On / Off をゲートとして扱う。ゲート中は各エンベロープの目標振幅をベロシティに応じた値に保ち、ゲートを閉じた後に各音源の `Decay` でリリースする。
 
-note on 中は envelope target が velocity に保たれ、note off 後は `Decay` で減衰する。
-
-MIDI Gate は一般的なモノシンセの挙動に合わせ、モノフォニック入力として押下中ノートを保持し、last-note priority で発音対象を決める。
-重複ノート中は、最後に押されたノートを pitch として使う。最後に押されたノートを離した時に他のノートがまだ押されている場合は、直前に有効だった押下中ノートへ pitch を戻し、gate は閉じない。
-gate は押下中ノートが 0 個になった時だけ閉じる。
+押下中のノートが重なる場合は、最後に押されたノートを優先する。そのノートを離すと、残っているノートのうち最後に押されたノートへ戻る。押下中ノートが 0 個になった時にゲートを閉じる。
 
 ```text
-MIDI note number -> pitch relative to Tune
+MIDI note number -> standard MIDI pitch plus Detune
 MIDI velocity    -> gate level / voice velocity
-note off         -> gate close only when no notes remain held
-release          -> Decay
-probability      -> applied per note-on before held-note tracking
+Note Off         -> gate close only when no notes remain held
+release          -> per-source Decay
+probability      -> applied per Note On before held-note tracking
 ```
 
-キーボード演奏や通常の MIDI クリップで音価を外部から制御したい場合に使う。
-
-### 将来的な拡張候補
-
-- MIDI + Grid
-- Free Rate Scan
-- Audio Rate Scan
-
-## Free Rate / Audio Rate Scan
-
-将来的には BPM 同期から外し、Hz 指定で走査できるモードを追加する。
-
-```text
-Scan Rate: 20 Hz - 2 kHz
-```
-
-低速ではシーケンサー、高速では疑似ウェーブテーブルやデータ音として動作する。
-
-MVP では実装しない。
+外部 MIDI シーケンサーのノート長で音価を制御したい場合に使う。
 
 ## UI 方針
 
@@ -481,63 +232,16 @@ UI は装飾よりも精密な操作を優先する。
 
 - Mode を明確に切り替えられるようにする
 - 共通の音源操作子を見つけやすくする
-- Internal Grid ではグリッドと現在の走査列を視覚表示する
-- セル値は明るさで表す
-- 操作子は少数で大きく効くものを優先する
-- パネルは SCAN / GRID / SOUND / ERROR / OUT に分ける
-- Tune は Hz で数値表示する
-- Range は Internal Grid 用の pitch range として oct で数値表示する
-- グリッド描画、波形、エンベロープ、グリッド補助表示などの描画UIには `jsui` ではなく `v8ui` を使う
+- パネルは MIDI / SOUND / PITCH / ERROR / OUT に分ける
+- Detune は cents で数値表示する
+- 波形やエンベロープの描画 UI を JavaScript で実装する場合は `v8ui` を使う
 - 文字説明を多くせず、操作面として整理する
-
-## 初期プリセット案
-
-初期プリセット案は Internal Grid でのパターン作成例である。MIDI Trigger / MIDI Gate では外部 MIDI 入力を前提に、同じ音源設定を使う。
-
-### Precise Clicks
-
-- Step Length: fixed 1/16-equivalent
-- Decay: 5 ms
-- Tune: 261.63 Hz
-- Range: 2.0 oct
-- Sine: high
-- Pulse: low
-- Noise: low
-- Pulse Width: 25%
-- Noise Color: bright
-- Probability: 100%
-- Jitter: 0 ms
-
-### Data Pulse
-
-- Step Length: fixed 1/16-equivalent
-- Decay: 12 ms
-- Tune: 82.4 Hz
-- Range: 3.0 oct
-- Sine: medium
-- Pulse: medium
-- Noise: medium
-- Pulse Width: 15%
-- Noise Color: neutral
-- Probability: 90%
-- Jitter: 1 ms
-
-### Low Stipple
-
-- Step Length: fixed 1/16-equivalent
-- Decay: 40 ms
-- Tune: 55.0 Hz
-- Range: 1.0 oct
-- Sine: high
-- Pulse: low
-- Noise: off
-- Probability: 100%
-- Jitter: 0 ms
 
 ## 非目標
 
-MVP では以下を実装しない。
+改修範囲の対象外は以下のとおり。
 
+- 内蔵グリッドシーケンサー
 - 複雑なモジュレーションマトリクス
 - ポリフォニックな鍵盤シンセとしての完全対応
 - 大量のオシレーター波形
@@ -545,18 +249,15 @@ MVP では以下を実装しない。
 - 高度なグリッチエフェクト
 - Chromatic Pitch Mode
 - Linear Hz Pitch Mode
-- Audio Rate Scan
 
 ## 実装メモ
 
-- `_logic.maxpat` にクロック、グリッド読み取り、発音ロジックを構築する
+- `_logic.maxpat` に MIDI 入力と発音ロジックを構築する
 - `_logic.maxpat` は生成スクリプトで再生成せず、Max 上で直接管理する
 - JavaScript を使う場合は v8 系を前提にする
-- グリッドを含む描画UIを JavaScript で実装する場合は `v8ui` を使い、`jsui` は使わない
+- 描画 UI を JavaScript で実装する場合は `v8ui` を使う
 - DSP は `gen~` 中心で実装する
 - UI と DSP は可能な限り役割を分ける
-- Internal Grid の voice 数は 8 とする
-- 同一列に複数セルがある場合は、Internal Grid では最大 8 voice まで同時に鳴らす
 - MIDI Trigger / MIDI Gate はモノフォニック入力として扱う
 - Drive / saturation は後段の Live デバイスや外部プラグインに委譲する
 - ピッチ確認時は Decay を長め、Noise を低め、Sine を高めにするとよい

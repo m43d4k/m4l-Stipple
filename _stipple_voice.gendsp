@@ -25,7 +25,7 @@
         "box": {
           "id": "code",
           "maxclass": "codebox",
-          "numinlets": 10,
+          "numinlets": 3,
           "numoutlets": 1,
           "outlettype": [
             ""
@@ -38,7 +38,7 @@
           ],
           "fontname": "Lato",
           "fontsize": 12.0,
-          "code": "History phase(0), env(0), target(0), noiseSeed(0.371), noiseLp(0);\r\ntrig = in1;\r\nfreq = max(in2, 1);\r\nvel = min(max(in3, 0), 1);\r\ndecayMs = max(in4, 1);\r\nsineLevel = min(max(in5, 0), 1);\r\npulseLevel = min(max(in6, 0), 1);\r\nnoiseLevel = min(max(in7, 0), 1);\r\npulseWidth = min(max(in8, 0.02), 0.98);\r\nnoiseColor = min(max(in9, 0), 1);\r\nattackMs = min(max(in10, 0), 10);\r\nhit = trig > 0;\r\ndecayCoef = exp(-1 / (samplerate * decayMs * 0.001));\r\nattackCoef = attackMs <= 0 ? 1 : 1 - exp(-1 / (samplerate * attackMs * 0.001));\r\ntarget = hit ? vel : target * decayCoef;\r\nenv = env + (target - env) * attackCoef;\r\nphase = phase + freq / samplerate;\r\nphase = phase - floor(phase);\r\nsine = sin(twopi * phase);\r\npulse = phase < pulseWidth ? 1 : -1;\r\nnoiseSeed = noiseSeed * 303.917 + 0.173;\r\nnoiseSeed = noiseSeed - floor(noiseSeed);\r\nnoise = noiseSeed * 2 - 1;\r\nnoiseLp = noiseLp + (noise - noiseLp) * 0.08;\r\nnoiseHp = noise - noiseLp;\r\nnoiseTone = noiseLp + (noiseHp - noiseLp) * noiseColor;\r\nvoice = sine * sineLevel;\r\nvoice += pulse * pulseLevel;\r\nvoice += noiseTone * noiseLevel;\r\nout1 = voice * env * 0.2;"
+          "code": "ampEnvelope(value, previousTarget, velocity, hit, gated, attackMs, decayMs) {\r\n    decayCoef = exp(-1 / (samplerate * decayMs * 0.001));\r\n    attackCoef = attackMs <= 0 ? 1 : 1 - exp(-1 / (samplerate * attackMs * 0.001));\r\n\r\n    // Trigger decays the velocity target from onset. Gate holds it while open.\r\n    target = gated ? velocity : (hit ? velocity : previousTarget * decayCoef);\r\n    following = value + (target - value) * attackCoef;\r\n    nextValue = gated && velocity <= 0 ? value * decayCoef : following;\r\n    return nextValue, target;\r\n}\r\n\r\nParam gateMode(0);\r\nParam detune(0);\r\nParam sineLevel(0.85);\r\nParam pulseLevel(0.2);\r\nParam noiseLevel(0.12);\r\nParam pulseWidth(0.25);\r\nParam noiseColor(0.75);\r\nParam sineAttack(0.5);\r\nParam sineDecay(18);\r\nParam pulseAttack(0.5);\r\nParam pulseDecay(18);\r\nParam noiseAttack(0.5);\r\nParam noiseDecay(18);\r\nParam pitchAmount(24);\r\nParam pitchDecay(10);\r\nParam pitchOn(0);\r\n\r\nHistory phase(0), noiseLp(0);\r\nHistory sineEnv(0), sineTarget(0);\r\nHistory pulseEnv(0), pulseTarget(0);\r\nHistory noiseEnv(0), noiseTarget(0);\r\nHistory pitchEnv(0), pitchDepth(0);\r\n\r\nhit = in1 > 0;\r\nnote = in2;\r\nvelocity = clamp(in3, 0, 1);\r\ngated = gateMode > 0;\r\nsineEnv, sineTarget = ampEnvelope(sineEnv, sineTarget, velocity, hit, gated, sineAttack, sineDecay);\r\npulseEnv, pulseTarget = ampEnvelope(pulseEnv, pulseTarget, velocity, hit, gated, pulseAttack, pulseDecay);\r\nnoiseEnv, noiseTarget = ampEnvelope(noiseEnv, noiseTarget, velocity, hit, gated, noiseAttack, noiseDecay);\r\n\r\n// Decay reaches 1% after pitchDecay milliseconds at the current sample rate.\r\npitchCoef = exp(log(0.01) / (samplerate * pitchDecay * 0.001));\r\npitchEnv = hit ? 1 : pitchEnv * pitchCoef;\r\ndepthCoef = 1 - exp(-1 / (samplerate * 0.002));\r\npitchDepth = pitchDepth + (pitchAmount * pitchOn - pitchDepth) * depthCoef;\r\nfrequency = min(440 * pow(2, (note - 69 + detune / 100 + pitchEnv * pitchDepth) / 12), samplerate * 0.49);\r\n\r\nsine = sin(twopi * phase);\r\npulse = phase < pulseWidth ? 1 : -1;\r\nphase = fract(phase + frequency / samplerate);\r\n\r\nnoiseLpCoef = 0.08;\r\nwhite = noise();\r\nnoiseLp = noiseLp + (white - noiseLp) * noiseLpCoef;\r\ncolor = noiseColor * 2 - 1;\r\nwhiteMix = 1 - max(0, -color);\r\nfilteredMix = -color;\r\n\r\n// Normalize to white-noise RMS, including the covariance with the low-pass signal.\r\nlowpassPower = noiseLpCoef / (2 - noiseLpCoef);\r\nrelativePower = whiteMix * whiteMix\r\n              + 2 * whiteMix * filteredMix * noiseLpCoef\r\n              + filteredMix * filteredMix * lowpassPower;\r\nnoiseTone = (white * whiteMix + noiseLp * filteredMix) / sqrt(relativePower);\r\n\r\nout1 = 0.2 * (sine * sineLevel * sineEnv\r\n            + pulse * pulseLevel * pulseEnv\r\n            + noiseTone * noiseLevel * noiseEnv);"
         }
       },
       {
@@ -56,7 +56,7 @@
             140.0,
             22.0
           ],
-          "text": "in 1 @comment trigger"
+          "text": "in 1 @comment \"start\""
         }
       },
       {
@@ -74,7 +74,7 @@
             120.0,
             22.0
           ],
-          "text": "in 2 @comment freq"
+          "text": "in 2 @comment \"MIDI note\""
         }
       },
       {
@@ -92,133 +92,7 @@
             130.0,
             22.0
           ],
-          "text": "in 3 @comment velocity"
-        }
-      },
-      {
-        "box": {
-          "id": "in4",
-          "maxclass": "newobj",
-          "numinlets": 0,
-          "numoutlets": 1,
-          "outlettype": [
-            ""
-          ],
-          "patching_rect": [
-            460.0,
-            25.0,
-            130.0,
-            22.0
-          ],
-          "text": "in 4 @comment decay"
-        }
-      },
-      {
-        "box": {
-          "id": "in5",
-          "maxclass": "newobj",
-          "numinlets": 0,
-          "numoutlets": 1,
-          "outlettype": [
-            ""
-          ],
-          "patching_rect": [
-            40.0,
-            445.0,
-            145.0,
-            22.0
-          ],
-          "text": "in 5 @comment sine"
-        }
-      },
-      {
-        "box": {
-          "id": "in6",
-          "maxclass": "newobj",
-          "numinlets": 0,
-          "numoutlets": 1,
-          "outlettype": [
-            ""
-          ],
-          "patching_rect": [
-            195.0,
-            445.0,
-            145.0,
-            22.0
-          ],
-          "text": "in 6 @comment pulse"
-        }
-      },
-      {
-        "box": {
-          "id": "in7",
-          "maxclass": "newobj",
-          "numinlets": 0,
-          "numoutlets": 1,
-          "outlettype": [
-            ""
-          ],
-          "patching_rect": [
-            350.0,
-            445.0,
-            145.0,
-            22.0
-          ],
-          "text": "in 7 @comment noise"
-        }
-      },
-      {
-        "box": {
-          "id": "in8",
-          "maxclass": "newobj",
-          "numinlets": 0,
-          "numoutlets": 1,
-          "outlettype": [
-            ""
-          ],
-          "patching_rect": [
-            505.0,
-            445.0,
-            150.0,
-            22.0
-          ],
-          "text": "in 8 @comment pulsewidth"
-        }
-      },
-      {
-        "box": {
-          "id": "in9",
-          "maxclass": "newobj",
-          "numinlets": 0,
-          "numoutlets": 1,
-          "outlettype": [
-            ""
-          ],
-          "patching_rect": [
-            40.0,
-            475.0,
-            150.0,
-            22.0
-          ],
-          "text": "in 9 @comment noisecolor"
-        }
-      },
-      {
-        "box": {
-          "id": "in10",
-          "maxclass": "newobj",
-          "numinlets": 0,
-          "numoutlets": 1,
-          "outlettype": [
-            ""
-          ],
-          "patching_rect": [
-            200.0,
-            475.0,
-            135.0,
-            22.0
-          ],
-          "text": "in 10 @comment attack"
+          "text": "in 3 @comment \"velocity\""
         }
       },
       {
@@ -271,90 +145,6 @@
           "destination": [
             "code",
             2
-          ]
-        }
-      },
-      {
-        "patchline": {
-          "source": [
-            "in4",
-            0
-          ],
-          "destination": [
-            "code",
-            3
-          ]
-        }
-      },
-      {
-        "patchline": {
-          "source": [
-            "in5",
-            0
-          ],
-          "destination": [
-            "code",
-            4
-          ]
-        }
-      },
-      {
-        "patchline": {
-          "source": [
-            "in6",
-            0
-          ],
-          "destination": [
-            "code",
-            5
-          ]
-        }
-      },
-      {
-        "patchline": {
-          "source": [
-            "in7",
-            0
-          ],
-          "destination": [
-            "code",
-            6
-          ]
-        }
-      },
-      {
-        "patchline": {
-          "source": [
-            "in8",
-            0
-          ],
-          "destination": [
-            "code",
-            7
-          ]
-        }
-      },
-      {
-        "patchline": {
-          "source": [
-            "in9",
-            0
-          ],
-          "destination": [
-            "code",
-            8
-          ]
-        }
-      },
-      {
-        "patchline": {
-          "source": [
-            "in10",
-            0
-          ],
-          "destination": [
-            "code",
-            9
           ]
         }
       },

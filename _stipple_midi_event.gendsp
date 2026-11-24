@@ -1,0 +1,419 @@
+{
+  "patcher": {
+    "fileversion": 1,
+    "appversion": {
+      "major": 9,
+      "minor": 0,
+      "revision": 9,
+      "architecture": "x64",
+      "modernui": 1
+    },
+    "rect": [
+      100.0,
+      100.0,
+      1100.0,
+      700.0
+    ],
+    "default_fontsize": 12.0,
+    "default_fontname": "Lato",
+    "gridsize": [
+      15.0,
+      15.0
+    ],
+    "boxes": [
+      {
+        "box": {
+          "id": "code",
+          "maxclass": "codebox",
+          "numinlets": 4,
+          "numoutlets": 9,
+          "outlettype": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "patching_rect": [
+            40.0,
+            75.0,
+            1000.0,
+            510.0
+          ],
+          "fontname": "Lato",
+          "fontsize": 12.0,
+          "code": "pickDelay(time, previousDue, limit) {\r\n    minimum = clamp(previousDue - time, 0, 5);\r\n    return minimum + max(0, limit - minimum) * (noise() + 1) * 0.5;\r\n}\r\n\r\nParam prob(100);\r\nParam jitter(0);\r\n\r\n// Pending MIDI Note Ons in input order (velocity 0 marks probability rejects).\r\nData pending(128, 2);\r\nData overflowByNote(2048);\r\nHistory pendingCount(0), activeIndex(-1), overflowCount(0);\r\nHistory triggerDue(0), gateDue(0), gateDelay(0);\r\n\r\nnote = in1;\r\nvelocity = in2;\r\nnoteKey = (in3 - 1) * 128 + note;\r\ntime = in4;\r\nlimit = clamp(jitter, 0, 5);\r\ntriggerStart = -1;\r\ngateStart = -1;\r\ngateNote = note;\r\ngateVelocity = 0;\r\noverflowStarted = 0;\r\noverflowForNote = peek(overflowByNote, noteKey);\r\n\r\nif (velocity > 0) {\r\n    accepted = 0;\r\n    if (prob > 0) {\r\n        randomPercent = (noise() + 1) * 50;\r\n        accepted = prob >= 100 || randomPercent < prob;\r\n    }\r\n\r\n    // Keep overflow ordered behind earlier entries for this pitch and channel.\r\n    if (pendingCount >= dim(pending) || overflowForNote > 0) {\r\n        poke(overflowByNote, overflowForNote + 1, noteKey);\r\n        overflowStarted = overflowCount == 0;\r\n        overflowCount += 1;\r\n    } else {\r\n        poke(pending, noteKey, pendingCount, 0);\r\n        poke(pending, accepted ? velocity : 0, pendingCount, 1);\r\n        if (accepted) {\r\n            gateStart = activeIndex < 0;\r\n            // Overlapping accepted notes share the initial delay.\r\n            if (gateStart) {\r\n                gateDelay = pickDelay(time, gateDue, limit);\r\n            }\r\n            activeIndex = pendingCount;\r\n            gateVelocity = velocity;\r\n            gateDue = time + gateDelay;\r\n        }\r\n        pendingCount += 1;\r\n    }\r\n    if (accepted) {\r\n        triggerStart = 1;\r\n        triggerDue = time + pickDelay(time, triggerDue, limit);\r\n    }\r\n} else {\r\n    matchIndex = -1;\r\n    for (i = 0; i < pendingCount; i += 1) {\r\n        if (peek(pending, i, 0) == noteKey) {\r\n            matchIndex = i;\r\n            break;\r\n        }\r\n    }\r\n\r\n    if (matchIndex >= 0) {\r\n        removedVelocity = peek(pending, matchIndex, 1);\r\n        if (removedVelocity > 0) {\r\n            gateDue = time + gateDelay;\r\n        }\r\n        if (matchIndex == activeIndex) {\r\n            activeIndex = -1;\r\n            gateStart = 0;\r\n            for (i = matchIndex - 1; i >= 0; i -= 1) {\r\n                previousVelocity = peek(pending, i, 1);\r\n                if (previousVelocity > 0) {\r\n                    activeIndex = i;\r\n                    gateNote = mod(peek(pending, i, 0), 128);\r\n                    gateVelocity = previousVelocity;\r\n                    break;\r\n                }\r\n            }\r\n        } else if (activeIndex > matchIndex) {\r\n            activeIndex -= 1;\r\n        }\r\n        for (i = matchIndex; i < pendingCount - 1; i += 1) {\r\n            poke(pending, peek(pending, i + 1, 0), i, 0);\r\n            poke(pending, peek(pending, i + 1, 1), i, 1);\r\n        }\r\n        pendingCount -= 1;\r\n    } else if (overflowForNote > 0) {\r\n        poke(overflowByNote, overflowForNote - 1, noteKey);\r\n        overflowCount -= 1;\r\n    }\r\n}\r\n\r\nout1 = triggerStart;\r\nout2 = note;\r\nout3 = velocity;\r\nout4 = triggerDue;\r\nout5 = gateStart;\r\nout6 = gateNote;\r\nout7 = gateVelocity;\r\nout8 = gateDue;\r\nout9 = overflowStarted;"
+        }
+      },
+      {
+        "box": {
+          "id": "in1",
+          "maxclass": "newobj",
+          "numinlets": 0,
+          "numoutlets": 1,
+          "outlettype": [
+            ""
+          ],
+          "patching_rect": [
+            40.0,
+            30.0,
+            170.0,
+            22.0
+          ],
+          "text": "in 1 @comment \"MIDI note\""
+        }
+      },
+      {
+        "box": {
+          "id": "in2",
+          "maxclass": "newobj",
+          "numinlets": 0,
+          "numoutlets": 1,
+          "outlettype": [
+            ""
+          ],
+          "patching_rect": [
+            260.0,
+            30.0,
+            170.0,
+            22.0
+          ],
+          "text": "in 2 @comment \"velocity\""
+        }
+      },
+      {
+        "box": {
+          "id": "in3",
+          "maxclass": "newobj",
+          "numinlets": 0,
+          "numoutlets": 1,
+          "outlettype": [
+            ""
+          ],
+          "patching_rect": [
+            480.0,
+            30.0,
+            170.0,
+            22.0
+          ],
+          "text": "in 3 @comment \"channel\""
+        }
+      },
+      {
+        "box": {
+          "id": "in4",
+          "maxclass": "newobj",
+          "numinlets": 0,
+          "numoutlets": 1,
+          "outlettype": [
+            ""
+          ],
+          "patching_rect": [
+            700.0,
+            30.0,
+            170.0,
+            22.0
+          ],
+          "text": "in 4 @comment \"input time (ms)\""
+        }
+      },
+      {
+        "box": {
+          "id": "out1",
+          "maxclass": "newobj",
+          "numinlets": 1,
+          "numoutlets": 0,
+          "patching_rect": [
+            40.0,
+            608.0,
+            180.0,
+            22.0
+          ],
+          "text": "out 1 @comment \"trigger start\""
+        }
+      },
+      {
+        "box": {
+          "id": "out2",
+          "maxclass": "newobj",
+          "numinlets": 1,
+          "numoutlets": 0,
+          "patching_rect": [
+            240.0,
+            608.0,
+            180.0,
+            22.0
+          ],
+          "text": "out 2 @comment \"trigger note\""
+        }
+      },
+      {
+        "box": {
+          "id": "out3",
+          "maxclass": "newobj",
+          "numinlets": 1,
+          "numoutlets": 0,
+          "patching_rect": [
+            440.0,
+            608.0,
+            180.0,
+            22.0
+          ],
+          "text": "out 3 @comment \"trigger velocity\""
+        }
+      },
+      {
+        "box": {
+          "id": "out4",
+          "maxclass": "newobj",
+          "numinlets": 1,
+          "numoutlets": 0,
+          "patching_rect": [
+            640.0,
+            608.0,
+            180.0,
+            22.0
+          ],
+          "text": "out 4 @comment \"trigger due time\""
+        }
+      },
+      {
+        "box": {
+          "id": "out5",
+          "maxclass": "newobj",
+          "numinlets": 1,
+          "numoutlets": 0,
+          "patching_rect": [
+            840.0,
+            608.0,
+            180.0,
+            22.0
+          ],
+          "text": "out 5 @comment \"gate start\""
+        }
+      },
+      {
+        "box": {
+          "id": "out6",
+          "maxclass": "newobj",
+          "numinlets": 1,
+          "numoutlets": 0,
+          "patching_rect": [
+            40.0,
+            644.0,
+            180.0,
+            22.0
+          ],
+          "text": "out 6 @comment \"gate note\""
+        }
+      },
+      {
+        "box": {
+          "id": "out7",
+          "maxclass": "newobj",
+          "numinlets": 1,
+          "numoutlets": 0,
+          "patching_rect": [
+            240.0,
+            644.0,
+            180.0,
+            22.0
+          ],
+          "text": "out 7 @comment \"gate velocity\""
+        }
+      },
+      {
+        "box": {
+          "id": "out8",
+          "maxclass": "newobj",
+          "numinlets": 1,
+          "numoutlets": 0,
+          "patching_rect": [
+            440.0,
+            644.0,
+            180.0,
+            22.0
+          ],
+          "text": "out 8 @comment \"gate due time\""
+        }
+      },
+      {
+        "box": {
+          "id": "out9",
+          "maxclass": "newobj",
+          "numinlets": 1,
+          "numoutlets": 0,
+          "patching_rect": [
+            640.0,
+            644.0,
+            180.0,
+            22.0
+          ],
+          "text": "out 9 @comment \"overflow\""
+        }
+      }
+    ],
+    "lines": [
+      {
+        "patchline": {
+          "source": [
+            "in1",
+            0
+          ],
+          "destination": [
+            "code",
+            0
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "in2",
+            0
+          ],
+          "destination": [
+            "code",
+            1
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "in3",
+            0
+          ],
+          "destination": [
+            "code",
+            2
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "in4",
+            0
+          ],
+          "destination": [
+            "code",
+            3
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "code",
+            0
+          ],
+          "destination": [
+            "out1",
+            0
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "code",
+            1
+          ],
+          "destination": [
+            "out2",
+            0
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "code",
+            2
+          ],
+          "destination": [
+            "out3",
+            0
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "code",
+            3
+          ],
+          "destination": [
+            "out4",
+            0
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "code",
+            4
+          ],
+          "destination": [
+            "out5",
+            0
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "code",
+            5
+          ],
+          "destination": [
+            "out6",
+            0
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "code",
+            6
+          ],
+          "destination": [
+            "out7",
+            0
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "code",
+            7
+          ],
+          "destination": [
+            "out8",
+            0
+          ]
+        }
+      },
+      {
+        "patchline": {
+          "source": [
+            "code",
+            8
+          ],
+          "destination": [
+            "out9",
+            0
+          ]
+        }
+      }
+    ]
+  }
+}
