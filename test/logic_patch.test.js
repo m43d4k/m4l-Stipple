@@ -72,13 +72,28 @@ test("the device exposes and recalls all 19 presentation controls", () => {
     assert.equal(parameter.parameter_initial_enable, 1);
   }
 
-  assert.deepEqual(boxes.get("ctrl-mode").saved_attribute_attributes.valueof.parameter_enum, ["MIDI Trigger", "MIDI Gate"]);
+  assert.deepEqual(boxes.get("ctrl-mode").saved_attribute_attributes.valueof.parameter_enum, ["Trigger", "Gate"]);
   const detune = boxes.get("ctrl-detune").saved_attribute_attributes.valueof;
   assert.equal(detune.parameter_unitstyle, 9);
   assert.equal(detune.parameter_units, "%+.1f cents");
   assert.equal(detune.parameter_mmin, -50);
   assert.equal(detune.parameter_mmax, 50);
   assert.deepEqual(detune.parameter_initial, [0]);
+});
+
+test("MIDI Mode changes the SOUND envelope label to Decay or Release", () => {
+  const label = boxes.get("obj-7");
+  assert.equal(label.presentation, 1);
+  assert.equal(label.text, "Decay");
+  assert.equal(boxes.get("obj-197").text, "deferlow");
+  assert.equal(boxes.get("obj-198").text, "sel 0 1");
+  assert.ok(hasLine("ctrl-mode", 0, "obj-197", 0));
+  assert.ok(hasLine("obj-197", 0, "obj-198", 0));
+  for (const [mode, message, text] of [[0, "obj-199", "Decay"], [1, "obj-200", "Release"]]) {
+    assert.equal(boxes.get(message).text, "set " + text);
+    assert.ok(hasLine("obj-198", mode, message, 0));
+    assert.ok(hasLine(message, 0, label.id, 0));
+  }
 });
 
 test("both MIDI engines use timestamped notes and schedule playback before DSP", () => {

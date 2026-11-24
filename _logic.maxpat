@@ -295,7 +295,7 @@
                     "presentation_rect": [ 8.0, 42.0, 116.0, 15.0 ],
                     "saved_attribute_attributes": {
                         "valueof": {
-                            "parameter_enum": [ "MIDI Trigger", "MIDI Gate" ],
+                            "parameter_enum": [ "Trigger", "Gate" ],
                             "parameter_initial": [ 0 ],
                             "parameter_initial_enable": 1,
                             "parameter_longname": "Mode",
@@ -806,6 +806,50 @@
                     "outlettype": [ "int" ],
                     "patching_rect": [ 30.0, 195.0, 33.0, 23.0 ],
                     "text": "+ 1"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-197",
+                    "maxclass": "newobj",
+                    "numinlets": 1,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 30.0, 235.0, 60.0, 23.0 ],
+                    "text": "deferlow"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-198",
+                    "maxclass": "newobj",
+                    "numinlets": 1,
+                    "numoutlets": 3,
+                    "outlettype": [ "bang", "bang", "" ],
+                    "patching_rect": [ 30.0, 270.0, 51.0, 23.0 ],
+                    "text": "sel 0 1"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-199",
+                    "maxclass": "message",
+                    "numinlets": 2,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 30.0, 320.0, 65.0, 23.0 ],
+                    "text": "set Decay"
+                }
+            },
+            {
+                "box": {
+                    "id": "obj-200",
+                    "maxclass": "message",
+                    "numinlets": 2,
+                    "numoutlets": 1,
+                    "outlettype": [ "" ],
+                    "patching_rect": [ 100.0, 320.0, 69.0, 23.0 ],
+                    "text": "set Release"
                 }
             },
             {
@@ -1363,7 +1407,45 @@
             {
                 "patchline": {
                     "destination": [ "obj-21", 0 ],
+                    "order": 0,
                     "source": [ "ctrl-mode", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-197", 0 ],
+                    "order": 1,
+                    "source": [ "ctrl-mode", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-198", 0 ],
+                    "source": [ "obj-197", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-199", 0 ],
+                    "source": [ "obj-198", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-200", 0 ],
+                    "source": [ "obj-198", 1 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-7", 0 ],
+                    "source": [ "obj-199", 0 ]
+                }
+            },
+            {
+                "patchline": {
+                    "destination": [ "obj-7", 0 ],
+                    "source": [ "obj-200", 0 ]
                 }
             },
             {
