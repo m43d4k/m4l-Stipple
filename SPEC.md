@@ -19,7 +19,7 @@
 - サイン波、パルス波、ノイズの 3 音源
 - 音源ごとに調整できる Attack / Decay アンプエンベロープ
 - Sine / Pulse 共通のピッチエンベロープ
-- Sine / Pulse 共通の Detune
+- Sine / Pulse 共通の Pitch と Detune
 - MIDI Trigger / MIDI Gate 共通の Probability と Jitter
 - 出力 Level
 
@@ -89,10 +89,10 @@ Noise Color の値に応じてノイズ成分のゲインを補正し、RMS を�
 
 ## ピッチ
 
-MIDI Trigger / MIDI Gate の基準ピッチは、Live の A3（MIDI note 69）を 440 Hz とする。Detune は Sine と Pulse に共通で適用し、−50〜+50 cents の範囲で調整する。初期値は 0 cents とする。
+MIDI Trigger / MIDI Gate の基準ピッチは、Live の A3（MIDI note 69）を 440 Hz とする。Detune は Sine と Pulse に共通で適用し、−50〜+50 cents の範囲で調整する。初期値は 0 cents とする。Pitch は両音源の基準音程を −24〜+24 st の範囲でリニアに調整する。初期値は 0 st、分解能は 0.01 st（1 cent）とする。Pitch の変化には時定数 2 ms のスムージングを適用する。
 
 ```text
-midiHz = 440 * 2 ^ ((noteNumber - 69) / 12 + detuneCents / 1200)
+midiHz = 440 * 2 ^ ((noteNumber - 69 + smoothedPitchSt) / 12 + detuneCents / 1200)
 ```
 
 ## アンプエンベロープ
@@ -152,7 +152,7 @@ Sine と Pulse に共通のピッチエンベロープを追加する。Jitter �
 
 ### PITCH
 
-- Detune
+- Pitch と Detune
 - Pitch Envelope の Amount、Decay、On/Off
 
 ### ERROR
@@ -201,7 +201,7 @@ Probability、Jitter、Gate のノート管理は Max のイベント処理用 `
 MIDI Note On で発音する。発音長と減衰は音源ごとの `Decay` が決める。
 
 ```text
-MIDI note number -> standard MIDI pitch plus Detune
+MIDI note number -> standard MIDI pitch plus Pitch and Detune
 MIDI velocity    -> hit strength
 Note Off         -> ignored
 length           -> per-source Decay
@@ -217,7 +217,7 @@ MIDI Note On / Off をゲートとして扱う。ゲート中は各エンベロ�
 押下中のノートが重なる場合は、最後に押されたノートを優先する。そのノートを離すと、残っているノートのうち最後に押されたノートへ戻る。押下中ノートが 0 個になった時にゲートを閉じる。
 
 ```text
-MIDI note number -> standard MIDI pitch plus Detune
+MIDI note number -> standard MIDI pitch plus Pitch and Detune
 MIDI velocity    -> gate level / voice velocity
 Note Off         -> gate close only when no notes remain held
 release          -> per-source Decay
@@ -233,7 +233,7 @@ UI は装飾よりも精密な操作を優先する。
 - Mode を明確に切り替えられるようにする
 - 共通の音源操作子を見つけやすくする
 - パネルは MIDI / SOUND / PITCH / ERROR / OUT に分ける
-- Detune は cents で数値表示する
+- Pitch は st、Detune は cents で数値表示する
 - 波形やエンベロープの描画 UI を JavaScript で実装する場合は `v8ui` を使う
 - 文字説明を多くせず、操作面として整理する
 

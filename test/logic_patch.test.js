@@ -8,7 +8,7 @@ const loadPatch = (file) => JSON.parse(fs.readFileSync(path.join(root, file), "u
 const logic = loadPatch("_logic.maxpat");
 const midi = loadPatch("_stipple_midi.maxpat");
 const midiEvent = loadPatch("_stipple_midi_event.gendsp");
-const voice = loadPatch("_stipple_voice.gendsp");
+const voice = loadPatch("_stipple_midi_voice.gendsp");
 const boxes = new Map(logic.boxes.map(({ box }) => [box.id, box]));
 const controls = [...boxes.values()].filter((box) => box.parameter_enable);
 
@@ -40,7 +40,7 @@ test("patch cords refer to unique boxes and valid outlets and inlets", () => {
   }
 });
 
-test("the device exposes and recalls all 19 presentation controls", () => {
+test("the device exposes and recalls all 20 presentation controls", () => {
   const device = loadDevice();
   const bpatcher = device.boxes.find(({ box }) => box.maxclass === "bpatcher").box;
   const [,, width, height] = bpatcher.presentation_rect;
@@ -49,7 +49,7 @@ test("the device exposes and recalls all 19 presentation controls", () => {
     .flatMap((bank) => bank.parameters.filter((name) => name !== "-"));
 
   assert.equal(bpatcher.name, "_logic.maxpat");
-  assert.equal(controls.length, 19);
+  assert.equal(controls.length, 20);
   assert.equal(exposed.length, controls.length);
   const midiControls = new Set(["ctrl-mode", "ctrl-prob", "ctrl-jitter"]);
   const expectedBankNames = controls
@@ -77,6 +77,39 @@ test("the device exposes and recalls all 19 presentation controls", () => {
   assert.equal(detune.parameter_mmin, -50);
   assert.equal(detune.parameter_mmax, 50);
   assert.deepEqual(detune.parameter_initial, [0]);
+});
+
+test("Pitch is a linear, cent-stepped parameter in the Live Pitch bank", () => {
+  const control = boxes.get("ctrl-pitch");
+  assert.equal(control?.maxclass, "live.numbox");
+  const parameter = control.saved_attribute_attributes.valueof;
+  assert.equal(parameter.parameter_type, 0);
+  assert.equal(parameter.parameter_mmin, -24);
+  assert.equal(parameter.parameter_mmax, 24);
+  assert.deepEqual(parameter.parameter_initial, [0]);
+  assert.equal(parameter.parameter_initial_enable, 1);
+  // Max omits the default linear exponent when saving the patch.
+  assert.equal(parameter.parameter_exponent ?? 1, 1);
+  assert.equal(parameter.parameter_steps, 4801);
+  assert.equal(parameter.parameter_unitstyle, 9);
+  assert.equal(parameter.parameter_units, "%+.2f st");
+  const pitchBank = Object.values(loadDevice().parameters.parameterbanks)
+    .find((bank) => bank.name === "Pitch");
+  assert.ok(pitchBank.parameters.includes("Pitch"));
+});
+
+test("Pitch reaches a dedicated Gen signal input in both MIDI modes", () => {
+  const pitchSignal = [...boxes.values()].find((box) => hasLine("ctrl-pitch", 0, box.id, 0));
+  assert.equal(pitchSignal?.text, "sig~ 0");
+  for (const voiceId of ["obj-182", "obj-187"]) {
+    assert.ok(hasLine(pitchSignal.id, 0, voiceId, 3), voiceId);
+  }
+  const input = voice.boxes.find(({ box }) => box.text?.startsWith("in 4 ")).box;
+  const code = voice.boxes.find(({ box }) => box.maxclass === "codebox").box;
+  assert.ok(voice.lines.some(({ patchline }) => (
+    patchline.source[0] === input.id && patchline.source[1] === 0 &&
+    patchline.destination[0] === code.id && patchline.destination[1] === 3
+  )));
 });
 
 test("MIDI Mode changes the SOUND envelope label to Decay or Release", () => {
@@ -130,7 +163,8 @@ test("both MIDI engines use timestamped notes and schedule playback before DSP",
     }
   }
 
-  assert.equal(boxes.get("obj-187").text, "gen~ @gen _stipple_voice @gateMode 1");
+  assert.equal(boxes.get("obj-182").text, "gen~ @gen _stipple_midi_voice");
+  assert.equal(boxes.get("obj-187").text, "gen~ @gen _stipple_midi_voice @gateMode 1");
   assert.equal(boxes.get("obj-58").text, "selector~ 2 1");
   assert.ok(hasLine("ctrl-mode", 0, "obj-21", 0));
   assert.ok(hasLine("obj-21", 0, "obj-58", 0));
@@ -159,12 +193,12 @@ test("MIDI scheduling uses native event objects and defers the overflow log", ()
   }
 });
 
-test("every SOUND control reaches the matching Gen parameter in both engines", () => {
+test("message-based voice controls reach the matching Gen parameter in both engines", () => {
   const code = voice.boxes.find(({ box }) => box.maxclass === "codebox").box.code;
-  const outsideSound = ["ctrl-mode", "ctrl-prob", "ctrl-jitter", "ctrl-level"];
+  const otherControls = ["ctrl-mode", "ctrl-prob", "ctrl-jitter", "ctrl-level", "ctrl-pitch"];
   const declarations = /^Param ([a-zA-Z]+)\((-?[\d.]+)\);$/gm;
   const defaults = new Map([...code.matchAll(declarations)].map(([, name, value]) => [name, Number(value)]));
-  for (const control of controls.filter(({ id }) => !outsideSound.includes(id))) {
+  for (const control of controls.filter(({ id }) => !otherControls.includes(id))) {
     const route = [...boxes.values()].find((box) => hasLine(control.id, 0, box.id, 0));
     assert.match(route.text, /^prepend /);
     const name = route.text.slice("prepend ".length);

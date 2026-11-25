@@ -1,20 +1,62 @@
 # Stipple
 
-Sine / Pulse / Noise を音源にした、外部 MIDI シーケンサー向けの Max for Live シンセデバイス。
+Sine / Pulse / Noise の3音源を備えた、外部 MIDI シーケンサー向けの Max for Live シンセサイザー。
 
-`Stipple_dev.amxd` を Live の MIDI トラックに読み込む。開発版のため、同じフォルダにある `_logic.maxpat`、`_stipple_midi.maxpat`、`_stipple_midi_event.gendsp`、`_stipple_voice.gendsp` を一緒に置く。改修版は Live Set に新規インスタンスとして追加する。
+## 使用方法
 
-## モード
+`Stipple_dev.amxd` を Live の MIDI トラックに読み込む。
 
-- **Trigger** は Note On で発音する。音源ごとの Attack と Decay で音の長さと輪郭を作る。
-- **Gate** は音源ごとの Attack で立ち上がり、最後の Note Off から Release でリリースする。ノートが重なったときは最後に押したノートを優先する。
+開発版では、以下のファイルを同じフォルダに配置する。
 
-## 操作子
+- `_logic.maxpat`
+- `_stipple_midi.maxpat`
+- `_stipple_midi_event.gendsp`
+- `_stipple_midi_voice.gendsp`
 
-- **MIDI** で発音モードを切り替える。
-- **SOUND** で各音源の Level、Attack、Decay（Gate では Release）と、Pulse Width、Noise Color を調整する。
-- **PITCH** の Detune は Sine / Pulse 共通で、標準の MIDI ピッチから −50〜+50 cents の範囲でずらす。初期値は 0 cents。Pitch Env は Sine / Pulse の発音時のピッチをずらし、Decay の時間で戻す。
-- **ERROR** の Probability は Note On を確率で間引く。Jitter は発音を最大 5 ms 遅らせ、Gate では対応する Note On と Note Off に同じ遅延量を使う。
-- **OUT** の Level はステレオ出力の音量を調整する。
+改修版は既存デバイスと差し替えず、新規インスタンスとして追加する。
+
+## MIDI
+
+発音モードを切り替える。
+
+- Trigger：Note On で発音し、Decay で音の長さを決める。
+- Gate：MIDI ノートの長さに従って発音する。
+
+## SOUND
+
+Sine / Pulse / Noise の各音源を独立して調整する。
+
+| Parameter | Description |
+| --- | --- |
+| Mix | 音源の音量 |
+| Attack | 立ち上がり時間 |
+| Decay | 減衰時間（Gate では Release） |
+| Width | パルス幅 |
+| Color | ノイズの明暗 |
+
+## PITCH
+
+Sine / Pulse 共通のピッチを調整する。
+
+| Parameter | Description |
+| --- | --- |
+| Pitch | ピッチ調整（±24 st） |
+| Detune | ピッチの微調整（±50 cents） |
+| Pitch Env | ピッチエンベロープの有効／無効 |
+| Amount | ピッチ変調量 |
+| Decay | ピッチの減衰時間 |
+
+## ERROR
+
+| Parameter | Description |
+| --- | --- |
+| Probability | 発音確率 |
+| Jitter | 発音タイミングのランダムな遅延（0〜5 ms） |
+
+## OUT
+
+ステレオ出力の音量を調整する。
+
+## 仕様
 
 詳細は [SPEC.md](SPEC.md) を参照。
